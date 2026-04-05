@@ -1,0 +1,62 @@
+/**
+ * @module pages
+ * Assembles the complete ordered page list from content modules.
+ * The page order here determines the order in the newspaper.
+ */
+
+import React from 'react';
+import { articles } from './articles';
+import { creditEntries } from './credits';
+import { installSteps, installNote } from './install';
+import type { PageData } from '@/types';
+
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
+/** Builds the full page array. Call once at module level. */
+export function buildPages(): PageData[] {
+  const pages: PageData[] = [];
+
+  // Hero
+  pages.push({
+    id: 'hero',
+    type: 'hero',
+    pageNumber: '— I —',
+    youtubeVideoId: 'Z89n5qGeuUw',
+    fallbackImage: 'images/hero-fallback.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=Z89n5qGeuUw',
+  });
+
+  // Articles
+  articles.forEach((article, i) => {
+    pages.push({
+      ...article,
+      id: `article-${i}`,
+      type: 'article',
+      pageNumber: `— ${ROMAN[i + 1]} —`,
+    });
+  });
+
+  // Download
+  pages.push({
+    id: 'download',
+    type: 'download',
+    pageNumber: `— ${ROMAN[articles.length + 1]} —`,
+    downloadUrl: 'https://drive.google.com/YOUR_LINK_HERE',
+    version: 'v1.0',
+    fileSize: 'approx. 2.4 GB',
+    steps: installSteps,
+    note: installNote,
+  });
+
+  // Credits
+  pages.push({
+    id: 'credits',
+    type: 'credits',
+    pageNumber: `— ${ROMAN[articles.length + 2]} —`,
+    entries: creditEntries,
+  });
+
+  return pages;
+}
+
+export const pages = buildPages();
