@@ -40,7 +40,7 @@ export function buildPages(): PageData[] {
     id: 'download',
     type: 'download',
     pageNumber: `— ${ROMAN[articles.length + 1]} —`,
-    downloadUrl: 'https://drive.google.com/YOUR_LINK_HERE',
+    downloadUrl: 'https://www.nexusmods.com/napoleontotalwar/mods/16?tab=files',
     version: 'v1.0',
     fileSize: 'approx. 2.4 GB',
     steps: installSteps,
