@@ -34,7 +34,7 @@ export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
     if (!wrap) return;
 
     const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${data.youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${data.youtubeVideoId}&controls=0&showinfo=0&modestbranding=1&rel=0&disablekb=1&iv_load_policy=3&playsinline=1`;
+    iframe.src = `https://www.youtube-nocookie.com/embed/${data.youtubeVideoId}?autoplay=1&mute=1&loop=1&playlist=${data.youtubeVideoId}&controls=0&showinfo=0&modestbranding=1&rel=0&disablekb=1&iv_load_policy=3&playsinline=1`;
     iframe.frameBorder = '0';
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
     iframe.style.cssText = 'width:100%;height:100%;pointer-events:none';
@@ -64,12 +64,13 @@ export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
       wrap.appendChild(playerDiv);
 
       new window.YT.Player('yt-api-player', {
+        host: 'https://www.youtube-nocookie.com',
         videoId: VID,
         playerVars: {
           autoplay: 1, mute: 1, controls: 0, showinfo: 0,
           modestbranding: 1, rel: 0, loop: 1, playlist: VID,
           disablekb: 1, iv_load_policy: 3, playsinline: 1,
-          fs: 0, cc_load_policy: 0,
+          fs: 0, cc_load_policy: 0, origin: window.location.origin,
         },
         events: {
           onReady: (e) => {
@@ -93,9 +94,9 @@ export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
       });
     };
 
-    // Load API script
+    // Load API script (nocookie variant avoids "sign in" bot-check walls)
     const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.src = 'https://www.youtube-nocookie.com/iframe_api';
     tag.onerror = () => tryIframe();
     document.head.appendChild(tag);
 

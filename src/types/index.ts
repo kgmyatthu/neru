@@ -144,6 +144,7 @@ declare global {
       Player: new (
         elementId: string,
         config: {
+          host?: string;
           videoId: string;
           playerVars: Record<string, number | string>;
           events: Record<string, (event: { target: YouTubePlayer; data?: number }) => void>;
