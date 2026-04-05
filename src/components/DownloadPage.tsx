@@ -38,7 +38,7 @@ export function DownloadPage({ data }: DownloadPageProps) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          ↓&ensp;Download from Google Drive
+          ↓&ensp;Download
         </a>
         <span className="dl-meta">
           {data.version} · {data.fileSize}
