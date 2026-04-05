@@ -150,7 +150,7 @@ declare global {
           events: Record<string, (event: { target: YouTubePlayer; data?: number }) => void>;
         }
       ) => YouTubePlayer;
-      PlayerState: { ENDED: number };
+      PlayerState: { ENDED: number; PLAYING: number };
     };
     onYouTubeIframeAPIReady: () => void;
   }
