@@ -4,7 +4,6 @@
  * The page order here determines the order in the newspaper.
  */
 
-import React from 'react';
 import { articles } from './articles';
 import { creditEntries } from './credits';
 import { installSteps, installNote } from './install';
