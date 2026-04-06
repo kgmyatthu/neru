@@ -34,6 +34,8 @@ interface UsePageTurnReturn {
   currentPage: number;
   /** Whether a page turn animation is currently playing. */
   isAnimating: boolean;
+  /** Scroll progress toward next page turn: -1..0..1 (negative = backward, positive = forward). */
+  scrollProgress: number;
   /** Trigger a page turn in the given direction. */
   turn: (direction: TurnDirection) => void;
   /** Jump directly to a page index (no animation). */
@@ -61,6 +63,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const scrollAccumRef = useRef(0);
   const touchStartRef = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -191,11 +194,13 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         if (e.deltaY > 0 && !atBottom) {
           scrollEl.scrollTop += e.deltaY;
           scrollAccumRef.current = 0;
+          setScrollProgress(0);
           return;
         }
         if (e.deltaY < 0 && !atTop) {
           scrollEl.scrollTop += e.deltaY;
           scrollAccumRef.current = 0;
+          setScrollProgress(0);
           return;
         }
       }
@@ -203,10 +208,16 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       scrollAccumRef.current += e.deltaY;
       if (scrollAccumRef.current > scrollThreshold) {
         scrollAccumRef.current = 0;
+        setScrollProgress(0);
         turn(1);
       } else if (scrollAccumRef.current < -scrollThreshold) {
         scrollAccumRef.current = 0;
+        setScrollProgress(0);
         turn(-1);
+      } else {
+        setScrollProgress(
+          Math.max(-1, Math.min(1, scrollAccumRef.current / scrollThreshold)),
+        );
       }
     };
 
@@ -287,6 +298,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   return {
     currentPage,
     isAnimating,
+    scrollProgress,
     turn,
     goToPage,
     containerRef,

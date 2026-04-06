@@ -48,7 +48,7 @@ function renderPageContent(page: PageData) {
 }
 
 export default function App() {
-  const { currentPage, turn, goToPage, pageRefs } = usePageTurn({
+  const { currentPage, scrollProgress, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
     animationDuration: 450,
     scrollThreshold: 40,
@@ -67,6 +67,7 @@ export default function App() {
       <PageNav
         total={pages.length}
         current={currentPage}
+        scrollProgress={scrollProgress}
         onNavigate={goToPage}
       />
 
