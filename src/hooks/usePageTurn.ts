@@ -234,7 +234,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!touchScrollEl || touchConsumed) return;
+      if (!touchScrollEl) return;
 
       const currentY = e.touches[0].clientY;
       const delta = touchStartRef.current - currentY; // positive = finger moving up
@@ -245,13 +245,8 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         touchScrollEl.scrollHeight - 1;
 
       // If there's room to scroll in the swipe direction, scroll the content
-      if (delta > 0 && !atBottom) {
+      if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
         touchConsumed = true;
-      } else if (delta < 0 && !atTop) {
-        touchConsumed = true;
-      }
-
-      if (touchConsumed) {
         touchScrollEl.scrollTop += delta;
         touchStartRef.current = currentY;
       }
