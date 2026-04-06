@@ -1,61 +1,77 @@
 /**
  * @component HeroPage
- * Full-viewport landing page with YouTube video backdrop.
- * Uses the YouTube IFrame API with robust failure detection:
- *   - API script fails to load → fallback image
- *   - Player fires an error → fallback image
- *   - Player "ready" but never reaches PLAYING within timeout → fallback image
- *   - Overall timeout (API never initialises) → fallback image
+ * Full-viewport landing page with video backdrop.
  *
- * The iframe-only fallback is intentionally omitted because YouTube's
- * "sign in to confirm you're not a bot" wall renders inside the iframe
- * with no cross-origin way to detect it.
+ * Fallback hierarchy:
+ *   1. YouTube IFrame API — best quality, zero hosting cost
+ *   2. Static fallback image — shown immediately while…
+ *   3. Self-hosted MP4 loads in the background — swaps in once ready
+ *
+ * If YouTube succeeds, the MP4 never loads.
+ * If YouTube fails (bot-check, network, timeout), the user sees the image
+ * until the MP4 is buffered enough to play, then it fades in.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import type { HeroPageData, YouTubePlayer } from '@/types';
+import type { HeroPageData } from '@/types';
 
-/** Max ms to wait for the API script + player to reach PLAYING. */
 const API_LOAD_TIMEOUT = 6000;
-/** Max ms after onReady to wait for the video to actually start playing. */
 const PLAY_TIMEOUT = 4000;
 
 interface HeroPageProps {
   data: HeroPageData;
-  onPlayerReady?: (player: YouTubePlayer) => void;
 }
 
-export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
+export function HeroPage({ data }: HeroPageProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLImageElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const settled = useRef(false);
   const playTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  /** Lock in a result — either video is playing or we show the image. */
+  /** Start loading the self-hosted MP4 and swap it in when ready. */
+  const startSelfHostedVideo = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const onCanPlay = () => {
+      video.play().then(() => {
+        video.style.opacity = '1';
+        if (fallbackRef.current) fallbackRef.current.style.display = 'none';
+      }).catch(() => {
+        // autoplay blocked — keep showing image
+      });
+    };
+
+    video.addEventListener('canplaythrough', onCanPlay, { once: true });
+    video.src = data.backdropVideo;
+    video.load();
+  }, [data.backdropVideo]);
+
+  /** Settle: YouTube succeeded or failed. */
   const settle = useCallback(
-    (success: boolean, player?: YouTubePlayer) => {
+    (ytSuccess: boolean) => {
       if (settled.current) return;
       settled.current = true;
       clearTimeout(playTimer.current);
 
-      if (success) {
-        // Video is confirmed playing — hide the image
+      if (ytSuccess) {
+        // YouTube is playing — hide image, don't bother with MP4
         if (fallbackRef.current) fallbackRef.current.style.display = 'none';
-        if (player) onPlayerReady?.(player);
       } else {
-        // YouTube failed — make sure image stays visible and remove player
+        // YouTube failed — clean up its DOM, keep image, start MP4 download
         if (fallbackRef.current) fallbackRef.current.style.display = '';
         const wrap = wrapRef.current?.querySelector('#yt-player-wrap');
         if (wrap) wrap.innerHTML = '';
+        startSelfHostedVideo();
       }
     },
-    [onPlayerReady],
+    [startSelfHostedVideo],
   );
 
   useEffect(() => {
     const VID = data.youtubeVideoId;
 
-    // Overall timeout — if nothing has settled by now, give up
     const globalTimeout = setTimeout(() => settle(false), API_LOAD_TIMEOUT);
 
     window.onYouTubeIframeAPIReady = () => {
@@ -80,15 +96,12 @@ export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
           onReady: (e) => {
             e.target.mute();
             e.target.playVideo();
-            // The player is "ready" but that doesn't mean video is playing.
-            // Start a timer — if we don't see PLAYING soon, it's blocked.
             playTimer.current = setTimeout(() => settle(false), PLAY_TIMEOUT);
           },
           onStateChange: (e) => {
             if (e.data === window.YT.PlayerState.PLAYING) {
-              // Confirmed: video frames are actually rendering
               clearTimeout(globalTimeout);
-              settle(true, e.target);
+              settle(true);
             } else if (e.data === window.YT.PlayerState.ENDED) {
               e.target.seekTo(0);
               e.target.playVideo();
@@ -121,6 +134,14 @@ export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
           src={data.fallbackImage}
           alt=""
           className="hero-fallback-img"
+        />
+        <video
+          ref={videoRef}
+          className="hero-selfhosted-video"
+          muted
+          loop
+          playsInline
+          preload="none"
         />
         <div id="yt-player-wrap" />
       </div>

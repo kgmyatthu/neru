@@ -22,6 +22,7 @@ export function buildPages(): PageData[] {
     pageNumber: '— I —',
     youtubeVideoId: 'Z89n5qGeuUw',
     fallbackImage: 'images/hero-fallback.jpg',
+    backdropVideo: 'videos/backdrop.mp4',
     trailerUrl: 'https://www.youtube.com/watch?v=Z89n5qGeuUw',
   });
 

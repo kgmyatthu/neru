@@ -5,7 +5,6 @@
  * Orchestrates the page-turn newspaper system by:
  * - Rendering all pages inside PageShell wrappers
  * - Managing page navigation via usePageTurn hook
- * - Handling YouTube audio toggle state
  * - Applying hero/parchment color modes based on current page
  *
  * Architecture:
@@ -14,7 +13,7 @@
  * - Page ordering is determined by the `pages` array
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { usePageTurn } from '@/hooks/usePageTurn';
 import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
@@ -24,26 +23,21 @@ import { DownloadPage } from '@/components/DownloadPage';
 import { CreditsPage } from '@/components/CreditsPage';
 import { PageNav } from '@/components/PageNav';
 import { PageArrows } from '@/components/PageArrows';
-import { AudioToggle } from '@/components/AudioToggle';
 import type {
   PageData,
   HeroPageData,
   ArticlePageData,
   DownloadPageData,
   CreditsPageData,
-  YouTubePlayer,
 } from '@/types';
 
 import '@/styles/global.css';
 
 /** Renders the correct content component based on page type. */
-function renderPageContent(
-  page: PageData,
-  onPlayerReady: (player: YouTubePlayer) => void
-) {
+function renderPageContent(page: PageData) {
   switch (page.type) {
     case 'hero':
-      return <HeroPage data={page as HeroPageData} onPlayerReady={onPlayerReady} />;
+      return <HeroPage data={page as HeroPageData} />;
     case 'article':
       return <ArticlePage data={page as ArticlePageData} />;
     case 'download':
@@ -60,24 +54,12 @@ export default function App() {
     scrollThreshold: 40,
   });
 
-  const [ytPlayer, setYtPlayer] = useState<YouTubePlayer | null>(null);
   const isOnHero = currentPage === 0;
 
   /** Apply body class for hero/parchment color mode. */
   useEffect(() => {
     document.body.classList.toggle('on-hero', isOnHero);
   }, [isOnHero]);
-
-  /** Mute audio when leaving hero page. */
-  useEffect(() => {
-    if (!isOnHero && ytPlayer) {
-      ytPlayer.mute();
-    }
-  }, [isOnHero, ytPlayer]);
-
-  const handlePlayerReady = useCallback((player: YouTubePlayer) => {
-    setYtPlayer(player);
-  }, []);
 
   return (
     <>
@@ -98,11 +80,6 @@ export default function App() {
         onTurn={turn}
       />
 
-      <AudioToggle
-        player={ytPlayer}
-        visible={isOnHero && ytPlayer !== null}
-      />
-
       {/* Page Stage */}
       <div className="stage">
         {pages.map((page, i) => (
@@ -112,7 +89,7 @@ export default function App() {
             isHero={page.type === 'hero'}
             pageNumber={page.pageNumber}
           >
-            {renderPageContent(page, handlePlayerReady)}
+            {renderPageContent(page)}
           </PageShell>
         ))}
       </div>

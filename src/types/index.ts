@@ -27,6 +27,8 @@ export interface HeroPageData extends BasePage {
   youtubeVideoId: string;
   /** Path to the static fallback image. */
   fallbackImage: string;
+  /** Path to self-hosted backdrop video (MP4). */
+  backdropVideo: string;
   /** YouTube trailer URL for the "Watch Trailer" button. */
   trailerUrl: string;
 }

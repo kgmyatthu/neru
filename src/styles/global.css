@@ -139,45 +139,6 @@
   }
   body.on-hero .scroll-hint { color: var(--parchment-dark); }
 
-  /* ===== AUDIO TOGGLE ===== */
-  .audio-toggle {
-    position: fixed;
-    bottom: 3.5rem;
-    right: 1.5rem;
-    z-index: 300;
-    width: 38px; height: 38px;
-    display: none; /* hidden until API player is ready */
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 1px solid rgba(205,191,154,0.3);
-    border-radius: 50%;
-    background: rgba(28,26,20,0.35);
-    backdrop-filter: blur(4px);
-    color: var(--parchment-dark);
-    font-size: 0.85rem;
-    opacity: 0.5;
-    transition: opacity 0.3s, background 0.3s;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  .audio-toggle:hover {
-    opacity: 0.85;
-    background: rgba(28,26,20,0.55);
-  }
-
-  .audio-toggle.visible { display: flex; }
-
-  .audio-toggle svg {
-    width: 16px; height: 16px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
   /* ===== HERO ===== */
   .hero-inner {
     position: absolute; inset: 0;
@@ -194,6 +155,14 @@
     position: absolute; top: 0; left: 0;
     width: 100%; height: 100%;
     object-fit: cover;
+  }
+  .hero-selfhosted-video {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 1;
   }
   #yt-player-wrap {
     position: absolute; top: 50%; left: 50%;
