@@ -69,7 +69,6 @@ export function HeroPage({ data, onPlayerReady }: HeroPageProps) {
       wrap.appendChild(playerDiv);
 
       new window.YT.Player('yt-api-player', {
-        host: 'https://www.youtube-nocookie.com',
         videoId: VID,
         playerVars: {
           autoplay: 1, mute: 1, controls: 0, showinfo: 0,
