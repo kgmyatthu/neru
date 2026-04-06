@@ -217,51 +217,59 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   /** Touch event handlers for mobile swipe — scrolls inner content first. */
   useEffect(() => {
     let touchScrollEl: HTMLElement | null = null;
-    let touchStartScrollTop = 0;
+    let touchConsumed = false;
 
     const handleTouchStart = (e: TouchEvent) => {
       touchStartRef.current = e.touches[0].clientY;
+      touchConsumed = false;
 
-      // Check if the touch started inside a scrollable .art-body
+      // Check if the active page has a scrollable .art-body
       const activePage = pageRefs.current[currentRef.current];
       const scrollEl = activePage?.querySelector('.art-body') as HTMLElement | null;
       if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 5) {
         touchScrollEl = scrollEl;
-        touchStartScrollTop = scrollEl.scrollTop;
       } else {
         touchScrollEl = null;
       }
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchScrollEl) return;
+
+      const currentY = e.touches[0].clientY;
+      const delta = touchStartRef.current - currentY; // positive = finger moving up
+
+      const atTop = touchScrollEl.scrollTop <= 1;
+      const atBottom =
+        touchScrollEl.scrollTop + touchScrollEl.clientHeight >=
+        touchScrollEl.scrollHeight - 1;
+
+      // If there's room to scroll in the swipe direction, scroll the content
+      if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
+        touchConsumed = true;
+        touchScrollEl.scrollTop += delta;
+        touchStartRef.current = currentY;
+      }
+    };
+
     const handleTouchEnd = (e: TouchEvent) => {
       if (animatingRef.current) return;
+
+      // If the touch was consumed by scrolling content, don't turn
+      if (touchConsumed) return;
+
       const delta = touchStartRef.current - e.changedTouches[0].clientY;
-
-      // If there's a scrollable element, check if it consumed the gesture
-      if (touchScrollEl) {
-        const scrolled = touchScrollEl.scrollTop !== touchStartScrollTop;
-        const atTop = touchScrollEl.scrollTop <= 1;
-        const atBottom =
-          touchScrollEl.scrollTop + touchScrollEl.clientHeight >=
-          touchScrollEl.scrollHeight - 1;
-
-        // If content scrolled during this touch, the user was reading — don't turn
-        if (scrolled) return;
-
-        // Content didn't scroll — only turn if at the boundary in swipe direction
-        if (delta > 0 && !atBottom) return;
-        if (delta < 0 && !atTop) return;
-      }
-
       if (Math.abs(delta) > swipeThreshold) {
         turn(delta > 0 ? 1 : -1);
       }
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [turn, swipeThreshold]);
