@@ -214,48 +214,12 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     return () => document.removeEventListener('wheel', handleWheel);
   }, [turn, scrollThreshold]);
 
-  /** Touch event handlers for mobile swipe — respects inner scrollable content. */
+  /** Touch event handlers for mobile swipe. */
   useEffect(() => {
-    /** Whether the current touch is scrolling inner content (not a page turn). */
-    let innerScrolling = false;
-
-    const getScrollEl = () => {
-      const activePage = pageRefs.current[currentRef.current];
-      return activePage?.querySelector('.art-body') as HTMLElement | null;
-    };
-
     const handleTouchStart = (e: TouchEvent) => {
       touchStartRef.current = e.touches[0].clientY;
-      innerScrolling = false;
-
-      // If content is scrollable and not at a boundary, let native scroll handle it
-      const scrollEl = getScrollEl();
-      if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 5) {
-        innerScrolling = true;
-      }
     };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!innerScrolling) return;
-
-      const scrollEl = getScrollEl();
-      if (!scrollEl) return;
-
-      const currentY = e.touches[0].clientY;
-      const delta = touchStartRef.current - currentY; // positive = swiping up
-
-      const atTop = scrollEl.scrollTop <= 1;
-      const atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
-
-      // If at a boundary and trying to go past it, stop inner scroll mode
-      if ((delta > 0 && atBottom) || (delta < 0 && atTop)) {
-        innerScrolling = false;
-      }
-    };
-
     const handleTouchEnd = (e: TouchEvent) => {
-      if (innerScrolling) return; // touch was consumed by inner scroll
-
       const delta = touchStartRef.current - e.changedTouches[0].clientY;
       if (Math.abs(delta) > swipeThreshold) {
         turn(delta > 0 ? 1 : -1);
@@ -263,11 +227,9 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     };
 
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [turn, swipeThreshold]);
