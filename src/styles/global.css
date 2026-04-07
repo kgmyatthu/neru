@@ -67,7 +67,21 @@
     font-style: italic; color: var(--ink-faded); z-index: 15;
   }
 
-  /* ===== STATIC FILM GRAIN + VIGNETTE (paper pages only) ===== */
+  /* ===== ANIMATED FILM GRAIN + VIGNETTE (paper pages only) ===== */
+  @keyframes grain-shift {
+    0%   { background-position: 0 0; }
+    10%  { background-position: -50px -25px; }
+    20%  { background-position: 30px -60px; }
+    30%  { background-position: -70px 40px; }
+    40%  { background-position: 55px -10px; }
+    50%  { background-position: -20px 70px; }
+    60%  { background-position: 60px -45px; }
+    70%  { background-position: -40px 15px; }
+    80%  { background-position: 25px 55px; }
+    90%  { background-position: -60px -35px; }
+    100% { background-position: 0 0; }
+  }
+
   .page-paper .page-front::after {
     content: '';
     position: absolute; inset: 0;
@@ -76,6 +90,7 @@
     opacity: 0.18;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
     background-size: 200px;
+    animation: grain-shift 0.8s steps(10) infinite;
   }
 
   .page-paper .page-front::before {
@@ -180,6 +195,7 @@
     position: absolute; inset: 0; z-index: 2; opacity: 0.06; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 128px;
+    animation: grain-shift 0.8s steps(10) infinite;
   }
   .hero-content {
     position: relative; z-index: 5; text-align: center;
