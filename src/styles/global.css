@@ -87,7 +87,7 @@
     position: absolute; inset: 0;
     z-index: 60;
     pointer-events: none;
-    opacity: 0.18;
+    opacity: 0.28;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
     background-size: 200px;
     animation: grain-shift 0.8s steps(10) infinite;
@@ -192,7 +192,7 @@
   }
   .hero-dim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); z-index: 1; }
   .hero-grain {
-    position: absolute; inset: 0; z-index: 2; opacity: 0.06; pointer-events: none;
+    position: absolute; inset: 0; z-index: 2; opacity: 0.10; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 128px;
     animation: grain-shift 0.8s steps(10) infinite;
