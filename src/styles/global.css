@@ -123,14 +123,6 @@
     gap: 0.35rem; padding: 2.5rem 0 1rem;
     pointer-events: none;
     background: linear-gradient(to bottom, transparent 0%, rgba(28,26,20,0.25) 100%);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    mask-image: linear-gradient(to bottom,
-      transparent 0%, rgba(0,0,0,0.01) 20%, rgba(0,0,0,0.04) 35%,
-      rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 80%, black 100%);
-    -webkit-mask-image: linear-gradient(to bottom,
-      transparent 0%, rgba(0,0,0,0.01) 20%, rgba(0,0,0,0.04) 35%,
-      rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 80%, black 100%);
   }
   .page-nav-wrap > * { pointer-events: auto; }
   body.on-hero .page-nav-wrap {
@@ -479,7 +471,7 @@
   .note { font-size: 0.98rem; color: var(--ink-mid); font-style: italic; margin-bottom: 1.5rem; padding: 0.8rem 1rem; border-left: 3px solid var(--accent); background: rgba(107,26,26,0.03); }
   .note code { background: none; padding: 0; font-size: 0.88rem; font-style: normal; font-weight: 600; color: var(--accent); }
   .dl-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .btn { display: inline-block; padding: 0.65rem 2rem; font-family: 'Playfair Display', serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; color: var(--parchment); background: var(--ink); border: 1.5px solid var(--ink); cursor: pointer; text-decoration: none; transition: all 0.25s ease; }
+  .btn { display: inline-block; padding: 0.45rem 1.4rem; font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; color: var(--parchment); background: var(--ink); border: 1.5px solid var(--ink); cursor: pointer; text-decoration: none; transition: all 0.25s ease; }
   .btn:hover { background: var(--ink-light); }
   .dl-meta { font-size: 0.85rem; color: var(--ink-faded); font-style: italic; }
 
