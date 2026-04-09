@@ -15,7 +15,7 @@ import React from 'react';
 import { InlineFigure } from '@/components/InlineFigure';
 import type { ArticlePageData } from '@/types';
 
-type ArticleContent = Omit<ArticlePageData, 'type' | 'id' | 'pageNumber'>;
+type ArticleContent = Omit<ArticlePageData, 'type' | 'id' | 'pageNumber' | 'path'>;
 
 /** All feature articles in display order. IDs and page numbers are auto-assigned. */
 export const articles: ArticleContent[] = [
