@@ -61,7 +61,7 @@ function getInitialPage(): number {
 export default function App() {
   const initialPage = useMemo(getInitialPage, []);
 
-  const { currentPage, turn, goToPage, pageRefs } = usePageTurn({
+  const { currentPage, scrollProgress, scrollDirection, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
     initialPage,
     animationDuration: 450,
@@ -107,6 +107,8 @@ export default function App() {
       <PageNav
         total={pages.length}
         current={currentPage}
+        scrollProgress={scrollProgress}
+        scrollDirection={scrollDirection}
         onNavigate={goToPage}
       />
 
@@ -127,6 +129,8 @@ export default function App() {
             key={page.id}
             ref={(el) => { pageRefs.current[i] = el; }}
             isHero={page.type === 'hero'}
+            isActive={i === currentPage}
+            scrollProgress={scrollProgress}
             pageNumber={page.pageNumber}
           >
             {renderPageContent(page, navigateById)}

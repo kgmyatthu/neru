@@ -61,6 +61,12 @@
   }
   .page.turning .page-curl-highlight { opacity: 1; }
 
+  .scroll-vignette {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 62;
+    transition: box-shadow 100ms ease-out;
+  }
+
   .page-num {
     position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
     font-family: 'Playfair Display', serif; font-size: 0.68rem;
@@ -126,7 +132,9 @@
     border-radius: 50%; cursor: pointer; transition: all 0.35s ease;
   }
   .page-nav .dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.5); }
-  .page-nav .dot-line { width: 6px; height: 1px; background: rgba(138,128,112,0.2); }
+  .page-nav .dot-line { position: relative; width: 6px; height: 1px; background: rgba(138,128,112,0.2); overflow: hidden; }
+  .page-nav .dot-line-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--ink); transition: width 100ms ease-out; }
+  body.on-hero .page-nav .dot-line-fill { background: var(--parchment); }
 
   body.on-hero .page-nav .dot { border-color: rgba(205,191,154,0.5); }
   body.on-hero .page-nav .dot.active { background: var(--parchment); border-color: var(--parchment); }

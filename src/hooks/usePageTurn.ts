@@ -36,6 +36,10 @@ interface UsePageTurnReturn {
   currentPage: number;
   /** Whether a page turn animation is currently playing. */
   isAnimating: boolean;
+  /** Combined scroll progress toward next page turn (0 to 1). */
+  scrollProgress: number;
+  /** Current scroll direction: 1 = forward, -1 = backward. */
+  scrollDirection: TurnDirection;
   /** Trigger a page turn in the given direction. */
   turn: (direction: TurnDirection) => void;
   /** Jump directly to a page index (no animation). */
@@ -64,6 +68,8 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [scrollDirection, setScrollDirection] = useState<TurnDirection>(1);
   const scrollAccumRef = useRef(0);
   const boundaryAccumRef = useRef(0);
   const boundaryPassedRef = useRef(false);
@@ -116,6 +122,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
     animatingRef.current = true;
     setIsAnimating(true);
+    setScrollProgress(0);
 
     const pageEl = direction === 1
       ? pageRefs.current[current]
@@ -173,6 +180,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     const clamped = Math.max(0, Math.min(index, totalPages - 1));
     currentRef.current = clamped;
     setCurrentPage(clamped);
+    setScrollProgress(0);
     stackPages(clamped);
   }, [totalPages, stackPages]);
 
@@ -187,10 +195,15 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       e.preventDefault();
       if (animatingRef.current) return;
 
+      const dir: TurnDirection = e.deltaY > 0 ? 1 : -1;
+      setScrollDirection(dir);
+
       // Check for scrollable inner content
       const activePage = pageRefs.current[currentRef.current];
       const scrollEl = activePage?.querySelector('.art-body') as HTMLElement | null;
-      if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 5) {
+      const hasScrollable = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 5;
+
+      if (hasScrollable) {
         const atTop = scrollEl.scrollTop <= 1;
         const atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
         if (e.deltaY > 0 && !atBottom) {
@@ -198,6 +211,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
           scrollAccumRef.current = 0;
           boundaryAccumRef.current = 0;
           boundaryPassedRef.current = false;
+          setScrollProgress(0);
           return;
         }
         if (e.deltaY < 0 && !atTop) {
@@ -205,11 +219,13 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
           scrollAccumRef.current = 0;
           boundaryAccumRef.current = 0;
           boundaryPassedRef.current = false;
+          setScrollProgress(0);
           return;
         }
-        // At boundary — accumulate extra scroll before allowing page turn
+        // At boundary — accumulate before allowing page turn
         if (!boundaryPassedRef.current) {
           boundaryAccumRef.current += Math.abs(e.deltaY);
+          setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / 120) * 0.6));
           if (boundaryAccumRef.current < 120) return;
           boundaryPassedRef.current = true;
           scrollAccumRef.current = 0;
@@ -218,11 +234,19 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       }
 
       scrollAccumRef.current += e.deltaY;
+      const baseProgress = hasScrollable ? 0.6 : 0;
+      const range = hasScrollable ? 0.4 : 1;
+      setScrollProgress(
+        baseProgress + Math.min(range, (Math.abs(scrollAccumRef.current) / scrollThreshold) * range),
+      );
+
       if (scrollAccumRef.current > scrollThreshold) {
         scrollAccumRef.current = 0;
+        setScrollProgress(0);
         turn(1);
       } else if (scrollAccumRef.current < -scrollThreshold) {
         scrollAccumRef.current = 0;
+        setScrollProgress(0);
         turn(-1);
       }
     };
@@ -241,6 +265,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       touchStartRef.current = e.touches[0].clientY;
       touchConsumed = false;
       touchBoundaryAccum = 0;
+      setScrollProgress(0);
 
       // Check if the active page has a scrollable .art-body
       const activePage = pageRefs.current[currentRef.current];
@@ -253,10 +278,16 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!touchScrollEl) return;
-
       const currentY = e.touches[0].clientY;
       const delta = touchStartRef.current - currentY; // positive = finger moving up
+      const dir: TurnDirection = delta > 0 ? 1 : -1;
+      setScrollDirection(dir);
+
+      // No scrollable content — show progress toward page turn
+      if (!touchScrollEl) {
+        setScrollProgress(Math.min(1, Math.abs(delta) / (swipeThreshold * 3)));
+        return;
+      }
 
       const atTop = touchScrollEl.scrollTop <= 1;
       const atBottom =
@@ -269,21 +300,23 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         touchBoundaryAccum = 0;
         touchScrollEl.scrollTop += delta * 2.5;
         touchStartRef.current = currentY;
+        setScrollProgress(0);
       } else if (touchScrollEl) {
         // At boundary — accumulate extra swipe distance before allowing page turn
         touchBoundaryAccum += Math.abs(delta);
         if (touchBoundaryAccum < 120) {
           touchStartRef.current = currentY;
           touchConsumed = true;
+          setScrollProgress(Math.min(0.6, (touchBoundaryAccum / 120) * 0.6));
         } else {
-          // Buffer passed — stop updating touchStartRef so touchEnd
-          // sees the full remaining swipe delta for the page turn
           touchConsumed = false;
+          setScrollProgress(0.6 + Math.min(0.4, ((touchBoundaryAccum - 120) / 80) * 0.4));
         }
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      setScrollProgress(0);
       if (animatingRef.current) return;
 
       // If the touch was consumed by scrolling content, don't turn
@@ -318,6 +351,8 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   return {
     currentPage,
     isAnimating,
+    scrollProgress,
+    scrollDirection,
     turn,
     goToPage,
     containerRef,
