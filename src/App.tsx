@@ -38,10 +38,10 @@ import type {
 import '@/styles/global.css';
 
 /** Renders the correct content component based on page type. */
-function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void) {
+function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void, isOnHero?: boolean) {
   switch (page.type) {
     case 'hero':
-      return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} />;
+      return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} isVisible={isOnHero} />;
     case 'article':
       return <ArticlePage data={page as ArticlePageData} />;
     case 'features':
@@ -131,7 +131,7 @@ export default function App() {
             isHero={page.type === 'hero'}
             pageNumber={page.pageNumber}
           >
-            {renderPageContent(page, navigateById)}
+            {renderPageContent(page, navigateById, isOnHero)}
           </PageShell>
         ))}
       </div>
