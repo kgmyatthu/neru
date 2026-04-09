@@ -16,7 +16,6 @@ export function FeaturesPage({ data }: FeaturesPageProps) {
             <div className="art-headline-area">
               <h2 className="art-headline">{article.headline}</h2>
               <p className="art-subhead">{article.subhead}</p>
-              <div className="art-headline-rule" />
             </div>
             <div className="features-section-body">
               {article.content}
