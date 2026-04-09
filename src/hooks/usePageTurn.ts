@@ -241,10 +241,14 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
       if (scrollAccumRef.current > scrollThreshold) {
         scrollAccumRef.current = 0;
+        boundaryAccumRef.current = 0;
+        boundaryPassedRef.current = false;
         setScrollProgress(0);
         turn(1);
       } else if (scrollAccumRef.current < -scrollThreshold) {
         scrollAccumRef.current = 0;
+        boundaryAccumRef.current = 0;
+        boundaryPassedRef.current = false;
         setScrollProgress(0);
         turn(-1);
       }
