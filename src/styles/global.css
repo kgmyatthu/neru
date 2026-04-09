@@ -420,7 +420,7 @@
   .util-page {
     width: 100%; max-width: 920px; margin: 0 auto;
     padding: 2.5rem 3rem;
-    display: flex; flex-direction: column; justify-content: center; height: 100vh;
+    display: flex; flex-direction: column; height: 100vh;
   }
 
   .util-masthead {

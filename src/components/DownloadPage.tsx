@@ -22,27 +22,29 @@ export function DownloadPage({ data }: DownloadPageProps) {
         <p className="dek">A brief guide to acquiring &amp; deploying the modification</p>
         <hr className="thin-rule" />
       </div>
-      <ol className="steps">
-        {data.steps.map((step) => (
-          <li key={step.numeral}>
-            <span className="num">{step.numeral}</span>
-            <div className="step-text">{step.content}</div>
-          </li>
-        ))}
-      </ol>
-      <p className="note">{data.note}</p>
-      <div className="dl-row">
-        <a
-          href={data.downloadUrl}
-          className="btn"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          ↓&ensp;Download
-        </a>
-        <span className="dl-meta">
-          {data.version} · {data.fileSize}
-        </span>
+      <div className="art-body">
+        <ol className="steps">
+          {data.steps.map((step) => (
+            <li key={step.numeral}>
+              <span className="num">{step.numeral}</span>
+              <div className="step-text">{step.content}</div>
+            </li>
+          ))}
+        </ol>
+        <p className="note">{data.note}</p>
+        <div className="dl-row">
+          <a
+            href={data.downloadUrl}
+            className="btn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ↓&ensp;Download
+          </a>
+          <span className="dl-meta">
+            {data.version} · {data.fileSize}
+          </span>
+        </div>
       </div>
     </div>
   );
