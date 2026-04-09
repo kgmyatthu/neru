@@ -19,6 +19,7 @@ export function buildPages(): PageData[] {
   pages.push({
     id: 'hero',
     type: 'hero',
+    path: '/',
     pageNumber: '— I —',
     youtubeVideoId: 'Z89n5qGeuUw',
     fallbackImage: 'images/hero-fallback.jpg',
@@ -32,6 +33,7 @@ export function buildPages(): PageData[] {
       ...article,
       id: `article-${i}`,
       type: 'article',
+      path: `/article${i + 1}`,
       pageNumber: `— ${ROMAN[i + 1]} —`,
     });
   });
@@ -40,6 +42,7 @@ export function buildPages(): PageData[] {
   pages.push({
     id: 'download',
     type: 'download',
+    path: '/download-installation',
     pageNumber: `— ${ROMAN[articles.length + 1]} —`,
     downloadUrl: 'https://www.nexusmods.com/napoleontotalwar/mods/16?tab=files',
     version: 'v1.0',
@@ -52,6 +55,7 @@ export function buildPages(): PageData[] {
   pages.push({
     id: 'discussion',
     type: 'discussion',
+    path: '/discussions',
     pageNumber: `— ${ROMAN[articles.length + 2]} —`,
     repo: 'kgmyatthu/neru',
     repoId: 'R_kgDOR6kjRQ',
@@ -63,6 +67,7 @@ export function buildPages(): PageData[] {
   pages.push({
     id: 'credits',
     type: 'credits',
+    path: '/credits',
     pageNumber: `— ${ROMAN[articles.length + 3]} —`,
     entries: creditEntries,
   });

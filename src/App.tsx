@@ -13,7 +13,7 @@
  * - Page ordering is determined by the `pages` array
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { usePageTurn } from '@/hooks/usePageTurn';
 import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
@@ -51,14 +51,44 @@ function renderPageContent(page: PageData) {
   }
 }
 
+/** Resolve initial page index from the current URL path. */
+function getInitialPage(): number {
+  const path = window.location.pathname;
+  const idx = pages.findIndex((p) => p.path === path);
+  return idx >= 0 ? idx : 0;
+}
+
 export default function App() {
+  const initialPage = useMemo(getInitialPage, []);
+
   const { currentPage, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
+    initialPage,
     animationDuration: 450,
     scrollThreshold: 40,
   });
 
   const isOnHero = currentPage === 0;
+
+  /** Sync URL when page changes. */
+  useEffect(() => {
+    const targetPath = pages[currentPage].path;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, [currentPage]);
+
+  /** Handle browser back/forward navigation. */
+  useEffect(() => {
+    const handlePopState = () => {
+      const idx = pages.findIndex((p) => p.path === window.location.pathname);
+      if (idx >= 0 && idx !== currentPage) {
+        goToPage(idx);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentPage, goToPage]);
 
   /** Apply body class for hero/parchment color mode. */
   useEffect(() => {

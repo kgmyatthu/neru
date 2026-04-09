@@ -21,6 +21,8 @@ import type { TurnDirection } from '@/types';
 interface UsePageTurnConfig {
   /** Total number of pages in the newspaper. */
   totalPages: number;
+  /** Initial page index to start on (0-based). */
+  initialPage?: number;
   /** Duration of the turn animation in milliseconds. */
   animationDuration?: number;
   /** Scroll delta threshold to trigger a page turn. */
@@ -54,19 +56,20 @@ const DEFAULTS = {
 export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const {
     totalPages,
+    initialPage = 0,
     animationDuration = DEFAULTS.animationDuration,
     scrollThreshold = DEFAULTS.scrollThreshold,
     swipeThreshold = DEFAULTS.swipeThreshold,
   } = config;
 
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [isAnimating, setIsAnimating] = useState(false);
   const scrollAccumRef = useRef(0);
   const touchStartRef = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
-  const currentRef = useRef(0);
+  const currentRef = useRef(initialPage);
 
   /** Synchronise refs with state for use in animation frames. */
   useEffect(() => {
@@ -173,7 +176,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
   /** Initialise page stack on mount. */
   useEffect(() => {
-    stackPages(0);
+    stackPages(initialPage);
   }, [stackPages]);
 
   /** Wheel event handler — scrolls inner content first, then turns pages. */

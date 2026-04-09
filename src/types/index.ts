@@ -18,6 +18,8 @@ export interface BasePage {
   type: PageType;
   /** Roman numeral displayed at the bottom of the page. */
   pageNumber: string;
+  /** URL path for this page (e.g., "/", "/article1"). */
+  path: string;
 }
 
 /** Hero/landing page with video backdrop. */
