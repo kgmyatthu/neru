@@ -54,9 +54,9 @@ export function buildPages(): PageData[] {
     type: 'discussion',
     pageNumber: `— ${ROMAN[articles.length + 2]} —`,
     repo: 'kgmyatthu/neru',
-    repoId: '',
+    repoId: 'R_kgDOR6kjRQ',
     category: 'General',
-    categoryId: '',
+    categoryId: 'DIC_kwDOR6kjRc4C6axI',
   });
 
   // Credits

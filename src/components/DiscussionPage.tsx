@@ -27,11 +27,11 @@ export function DiscussionPage({ data }: DiscussionPageProps) {
     script.setAttribute('data-category-id', data.categoryId);
     script.setAttribute('data-mapping', 'specific');
     script.setAttribute('data-term', 'General Discussion');
-    script.setAttribute('data-strict', '0');
+    script.setAttribute('data-strict', '1');
     script.setAttribute('data-reactions-enabled', '1');
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'top');
-    script.setAttribute('data-theme', 'transparent_dark');
+    script.setAttribute('data-theme', 'gruvbox');
     script.setAttribute('data-lang', 'en');
     script.crossOrigin = 'anonymous';
     script.async = true;
