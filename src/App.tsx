@@ -129,8 +129,6 @@ export default function App() {
             key={page.id}
             ref={(el) => { pageRefs.current[i] = el; }}
             isHero={page.type === 'hero'}
-            isActive={i === currentPage}
-            scrollProgress={scrollProgress}
             pageNumber={page.pageNumber}
           >
             {renderPageContent(page, navigateById)}

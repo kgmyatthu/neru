@@ -61,12 +61,6 @@
   }
   .page.turning .page-curl-highlight { opacity: 1; }
 
-  .scroll-vignette {
-    position: absolute; inset: 0;
-    pointer-events: none; z-index: 62;
-    transition: box-shadow 100ms ease-out;
-  }
-
   .page-num {
     position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
     font-family: 'Playfair Display', serif; font-size: 0.68rem;
@@ -131,10 +125,8 @@
     font-family: 'Playfair Display', serif; font-size: 0.5rem;
     letter-spacing: 0.15em; text-transform: uppercase;
     color: var(--ink-faded); opacity: 0.6;
-    animation: hint-fade-in 0.3s ease-out;
   }
   body.on-hero .page-nav-hint { color: var(--parchment-dark); }
-  @keyframes hint-fade-in { from { opacity: 0; } to { opacity: 0.6; } }
   .page-nav {
     display: flex; align-items: center; gap: 0.3rem;
   }
