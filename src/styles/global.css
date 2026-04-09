@@ -123,6 +123,10 @@
     gap: 0.35rem; padding: 2.5rem 0 1rem;
     pointer-events: none;
     background: linear-gradient(to bottom, transparent 0%, rgba(28,26,20,0.25) 100%);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 40%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40%);
   }
   .page-nav-wrap > * { pointer-events: auto; }
   body.on-hero .page-nav-wrap {
@@ -132,16 +136,22 @@
     font-family: 'Playfair Display', serif; font-size: 0.62rem;
     letter-spacing: 0.12em; text-transform: uppercase;
     color: var(--ink-faded); opacity: 0.95;
+    text-shadow: -0.5px 0 rgba(255,60,60,0.3), 0.5px 0 rgba(60,120,255,0.3);
   }
-  body.on-hero .page-nav-hint { color: var(--parchment-dark); }
+  body.on-hero .page-nav-hint { color: var(--parchment-dark);
+    text-shadow: -0.5px 0 rgba(255,100,100,0.35), 0.5px 0 rgba(100,160,255,0.35);
+  }
   .page-nav {
     display: flex; align-items: center; gap: 0.3rem;
   }
   .page-nav .dot {
     width: 8px; height: 8px; border: 1.5px solid var(--ink-faded);
     border-radius: 50%; cursor: pointer; transition: all 0.35s ease;
+    box-shadow: -0.6px 0 0 rgba(255,60,60,0.25), 0.6px 0 0 rgba(60,120,255,0.25);
   }
-  .page-nav .dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.4); }
+  .page-nav .dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.4);
+    box-shadow: -0.8px 0 0 rgba(255,60,60,0.35), 0.8px 0 0 rgba(60,120,255,0.35);
+  }
   .page-nav .dot-line { position: relative; width: 18px; height: 1.5px; background: rgba(138,128,112,0.2); overflow: hidden; }
   .page-nav .dot-line-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--ink); transition: width 100ms ease-out; }
   body.on-hero .page-nav .dot-line-fill { background: var(--parchment); }
@@ -154,8 +164,11 @@
     z-index: 300; font-family: 'Playfair Display', serif;
     font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase;
     color: var(--ink-faded); opacity: 0.8; transition: opacity 0.4s;
+    text-shadow: -0.5px 0 rgba(255,60,60,0.3), 0.5px 0 rgba(60,120,255,0.3);
   }
-  body.on-hero .scroll-hint { color: var(--parchment-dark); }
+  body.on-hero .scroll-hint { color: var(--parchment-dark);
+    text-shadow: -0.5px 0 rgba(255,100,100,0.35), 0.5px 0 rgba(100,160,255,0.35);
+  }
 
   /* ===== HERO ===== */
   .hero-inner {
