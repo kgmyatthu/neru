@@ -27,7 +27,7 @@ interface PageShellProps {
 }
 
 export const PageShell = forwardRef<HTMLDivElement, PageShellProps>(
-  function PageShell({ children, isHero, pageNumber }, ref) {
+  function PageShell({ children, isHero }, ref) {
     return (
       <div
         ref={ref}
