@@ -35,7 +35,6 @@ export const PageShell = forwardRef<HTMLDivElement, PageShellProps>(
       >
         <div className="page-front">
           {children}
-          {!isHero && <span className="page-num">{pageNumber}</span>}
         </div>
         <div className="page-back" />
         <div className="page-curl-highlight" />

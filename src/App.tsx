@@ -112,10 +112,6 @@ export default function App() {
         onNavigate={goToPage}
       />
 
-      {isOnHero && (
-        <div className="scroll-hint">Scroll to turn pages</div>
-      )}
-
       <PageArrows
         current={currentPage}
         total={pages.length}
