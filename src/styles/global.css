@@ -271,6 +271,15 @@
     margin-top: 0.7rem;
   }
 
+  /* Features page sections */
+  .features-section { margin-bottom: 2rem; }
+  .features-section .art-headline-area { margin-bottom: 0.8rem; }
+  .features-section-body { margin-bottom: 1rem; }
+  .features-divider {
+    width: 40%; height: 1px; margin: 2rem auto;
+    background: var(--rule);
+  }
+
   /* Body columns */
   .art-body {
     flex: 1;

@@ -27,15 +27,13 @@ export function buildPages(): PageData[] {
     trailerUrl: 'https://www.youtube.com/watch?v=Z89n5qGeuUw',
   });
 
-  // Articles
-  articles.forEach((article, i) => {
-    pages.push({
-      ...article,
-      id: `article-${i}`,
-      type: 'article',
-      path: `/article${i + 1}`,
-      pageNumber: `— ${ROMAN[i + 1]} —`,
-    });
+  // Features (all articles combined)
+  pages.push({
+    id: 'features',
+    type: 'features',
+    path: '/features',
+    pageNumber: `— ${ROMAN[1]} —`,
+    articles,
   });
 
   // Download
@@ -43,7 +41,7 @@ export function buildPages(): PageData[] {
     id: 'download',
     type: 'download',
     path: '/download-installation',
-    pageNumber: `— ${ROMAN[articles.length + 1]} —`,
+    pageNumber: `— ${ROMAN[2]} —`,
     downloadUrl: 'https://www.nexusmods.com/napoleontotalwar/mods/16?tab=files',
     version: 'v1.0',
     fileSize: 'approx. 2.4 GB',
@@ -56,7 +54,7 @@ export function buildPages(): PageData[] {
     id: 'discussion',
     type: 'discussion',
     path: '/discussions',
-    pageNumber: `— ${ROMAN[articles.length + 2]} —`,
+    pageNumber: `— ${ROMAN[3]} —`,
     repo: 'kgmyatthu/neru',
     repoId: 'R_kgDOR6kjRQ',
     category: 'General',
@@ -68,7 +66,7 @@ export function buildPages(): PageData[] {
     id: 'credits',
     type: 'credits',
     path: '/credits',
-    pageNumber: `— ${ROMAN[articles.length + 3]} —`,
+    pageNumber: `— ${ROMAN[4]} —`,
     entries: creditEntries,
   });
 

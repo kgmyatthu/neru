@@ -19,6 +19,7 @@ import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
 import { HeroPage } from '@/components/HeroPage';
 import { ArticlePage } from '@/components/ArticlePage';
+import { FeaturesPage } from '@/components/FeaturesPage';
 import { DownloadPage } from '@/components/DownloadPage';
 import { CreditsPage } from '@/components/CreditsPage';
 import { DiscussionPage } from '@/components/DiscussionPage';
@@ -28,6 +29,7 @@ import type {
   PageData,
   HeroPageData,
   ArticlePageData,
+  FeaturesPageData,
   DownloadPageData,
   CreditsPageData,
   DiscussionPageData,
@@ -42,6 +44,8 @@ function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void
       return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} />;
     case 'article':
       return <ArticlePage data={page as ArticlePageData} />;
+    case 'features':
+      return <FeaturesPage data={page as FeaturesPageData} />;
     case 'download':
       return <DownloadPage data={page as DownloadPageData} />;
     case 'credits':
