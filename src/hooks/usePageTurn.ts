@@ -267,7 +267,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
         touchConsumed = true;
         touchBoundaryAccum = 0;
-        touchScrollEl.scrollTop += delta;
+        touchScrollEl.scrollTop += delta * 2.5;
         touchStartRef.current = currentY;
       } else if (touchScrollEl) {
         // At boundary — accumulate extra swipe distance before allowing page turn
