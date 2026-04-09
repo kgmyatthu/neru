@@ -222,22 +222,21 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
           setScrollProgress(0);
           return;
         }
-        // At boundary — accumulate before allowing page turn
-        if (!boundaryPassedRef.current) {
-          boundaryAccumRef.current += Math.abs(e.deltaY);
-          setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / 180) * 0.6));
-          if (boundaryAccumRef.current < 180) return;
-          boundaryPassedRef.current = true;
-          scrollAccumRef.current = 0;
-          return;
-        }
+      }
+
+      // Accumulate boundary buffer before allowing page turn (all pages)
+      if (!boundaryPassedRef.current) {
+        boundaryAccumRef.current += Math.abs(e.deltaY);
+        setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / 180) * 0.6));
+        if (boundaryAccumRef.current < 180) return;
+        boundaryPassedRef.current = true;
+        scrollAccumRef.current = 0;
+        return;
       }
 
       scrollAccumRef.current += e.deltaY;
-      const baseProgress = hasScrollable ? 0.6 : 0;
-      const range = hasScrollable ? 0.4 : 1;
       setScrollProgress(
-        baseProgress + Math.min(range, (Math.abs(scrollAccumRef.current) / scrollThreshold) * range),
+        0.6 + Math.min(0.4, (Math.abs(scrollAccumRef.current) / scrollThreshold) * 0.4),
       );
 
       if (scrollAccumRef.current > scrollThreshold) {
