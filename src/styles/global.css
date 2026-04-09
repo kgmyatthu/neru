@@ -270,7 +270,6 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding-top: 0;
-    padding-bottom: 2.5rem;
     font-size: 1.05rem;
     scrollbar-width: thin;
     scrollbar-color: var(--parchment-dark) transparent;
@@ -472,6 +471,7 @@
 
   @media (max-width: 768px) {
     .article-wrap { padding: 1.5rem 1.2rem 3.5rem; }
+    .art-body { padding-bottom: 2.5rem; }
     .art-text-cols { columns: 1; }
     .art-fig { margin: 0 0 0.5rem 0; }
     .art-inline-fig, .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
