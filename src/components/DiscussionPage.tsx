@@ -4,7 +4,7 @@
  * Users authenticate via GitHub to leave comments.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DiscussionPageData } from '@/types';
 
 interface DiscussionPageProps {
@@ -14,6 +14,7 @@ interface DiscussionPageProps {
 export function DiscussionPage({ data }: DiscussionPageProps) {
   const giscusRef = useRef<HTMLDivElement>(null);
   const loaded = useRef(false);
+  const [interactive, setInteractive] = useState(false);
 
   useEffect(() => {
     if (loaded.current || !giscusRef.current) return;
@@ -50,7 +51,12 @@ export function DiscussionPage({ data }: DiscussionPageProps) {
         <p className="dek">Join the conversation &mdash; sign in with GitHub to comment</p>
         <hr className="thin-rule" />
       </div>
-      <div className="art-body discussion-body" ref={giscusRef} />
+      <div
+        className={`art-body discussion-body${interactive ? ' interactive' : ''}`}
+        ref={giscusRef}
+        onClick={() => setInteractive(true)}
+        onMouseLeave={() => setInteractive(false)}
+      />
     </div>
   );
 }

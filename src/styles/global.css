@@ -462,6 +462,8 @@
     scrollbar-width: thin;
     scrollbar-color: var(--parchment-dark) transparent;
   }
+  .discussion-body iframe { pointer-events: none; }
+  .discussion-body.interactive iframe { pointer-events: auto; }
 
   .finis { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 3px double var(--rule); }
   .finis .end-mark { font-family: 'Playfair Display', serif; font-size: 1rem; display: block; margin-bottom: 0.5rem; color: var(--ink-mid); letter-spacing: 0.3em; }
