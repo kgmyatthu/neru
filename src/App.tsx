@@ -13,7 +13,7 @@
  * - Page ordering is determined by the `pages` array
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { usePageTurn } from '@/hooks/usePageTurn';
 import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
@@ -36,10 +36,10 @@ import type {
 import '@/styles/global.css';
 
 /** Renders the correct content component based on page type. */
-function renderPageContent(page: PageData) {
+function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void) {
   switch (page.type) {
     case 'hero':
-      return <HeroPage data={page as HeroPageData} />;
+      return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} />;
     case 'article':
       return <ArticlePage data={page as ArticlePageData} />;
     case 'download':
@@ -69,6 +69,12 @@ export default function App() {
   });
 
   const isOnHero = currentPage === 0;
+
+  /** Navigate to a page by its id (e.g., 'download', 'discussion'). */
+  const navigateById = useCallback((pageId: string) => {
+    const idx = pages.findIndex((p) => p.id === pageId);
+    if (idx >= 0) goToPage(idx);
+  }, [goToPage]);
 
   /** Sync URL when page changes. */
   useEffect(() => {
@@ -123,7 +129,7 @@ export default function App() {
             isHero={page.type === 'hero'}
             pageNumber={page.pageNumber}
           >
-            {renderPageContent(page)}
+            {renderPageContent(page, navigateById)}
           </PageShell>
         ))}
       </div>

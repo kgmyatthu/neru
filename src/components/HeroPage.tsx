@@ -20,9 +20,10 @@ const PLAY_TIMEOUT = 4000;
 
 interface HeroPageProps {
   data: HeroPageData;
+  onNavigate?: (pageId: string) => void;
 }
 
-export function HeroPage({ data }: HeroPageProps) {
+export function HeroPage({ data, onNavigate }: HeroPageProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const fallbackRef = useRef<HTMLImageElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -160,15 +161,28 @@ export function HeroPage({ data }: HeroPageProps) {
         <p className="hero-headline">
           Built on NER's core — engage battles at Napoleonic-era corps scale.
         </p>
-        <a
-          href={data.trailerUrl}
-          className="btn"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ marginTop: '1.5rem' }}
-        >
-          ▶&ensp;Watch Trailer
-        </a>
+        <div className="hero-buttons">
+          <a
+            href={data.trailerUrl}
+            className="btn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ▶&ensp;Watch Trailer
+          </a>
+          <button
+            className="btn"
+            onClick={() => onNavigate?.('download')}
+          >
+            ⬇&ensp;Download
+          </button>
+          <button
+            className="btn"
+            onClick={() => onNavigate?.('discussion')}
+          >
+            💬&ensp;Discussion
+          </button>
+        </div>
       </div>
     </div>
   );

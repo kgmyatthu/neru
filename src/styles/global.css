@@ -193,6 +193,7 @@
   .flourish { font-size: 1rem; color: var(--parchment-dark); opacity: 0.5; }
   .hero-edition { font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--parchment-dark); opacity: 0.8; }
   .hero-headline { font-size: 1.22rem; font-weight: 300; font-style: italic; color: var(--parchment-dark); max-width: 500px; margin: 0 auto; opacity: 0.75; }
+  .hero-buttons { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
 
   /* ===== ARTICLE PAGE ===== */
   .article-wrap {
