@@ -200,6 +200,17 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 128px;
   }
+  .hero-volume-btn {
+    position: absolute; bottom: 4rem; right: 1.5rem; z-index: 10;
+    width: 2.2rem; height: 2.2rem;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(28,26,20,0.4); border: 1px solid rgba(205,191,154,0.25);
+    border-radius: 50%; color: var(--parchment); font-size: 0.9rem;
+    cursor: pointer; opacity: 0.7; transition: opacity 0.3s;
+  }
+  .hero-volume-btn:hover { opacity: 1; }
+  body:not(.on-hero) .hero-volume-btn { display: none; }
+
   .hero-content {
     position: relative; z-index: 5; text-align: center;
     padding: 2rem; max-width: 720px; color: var(--parchment);

@@ -12,8 +12,8 @@
  * until the MP4 is buffered enough to play, then it fades in.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
-import type { HeroPageData } from '@/types';
+import { useEffect, useRef, useCallback, useState } from 'react';
+import type { HeroPageData, YouTubePlayer } from '@/types';
 
 const API_LOAD_TIMEOUT = 6000;
 const PLAY_TIMEOUT = 4000;
@@ -29,6 +29,9 @@ export function HeroPage({ data, onNavigate }: HeroPageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const settled = useRef(false);
   const playTimer = useRef<ReturnType<typeof setTimeout>>();
+  const ytPlayerRef = useRef<YouTubePlayer | null>(null);
+  const [ytActive, setYtActive] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   /** Start loading the self-hosted MP4 and swap it in when ready. */
   const startSelfHostedVideo = useCallback(() => {
@@ -59,6 +62,7 @@ export function HeroPage({ data, onNavigate }: HeroPageProps) {
       if (ytSuccess) {
         // YouTube is playing — hide image, don't bother with MP4
         if (fallbackRef.current) fallbackRef.current.style.display = 'none';
+        setYtActive(true);
       } else {
         // YouTube failed — clean up its DOM, keep image, start MP4 download
         if (fallbackRef.current) fallbackRef.current.style.display = '';
@@ -95,6 +99,7 @@ export function HeroPage({ data, onNavigate }: HeroPageProps) {
         },
         events: {
           onReady: (e) => {
+            ytPlayerRef.current = e.target;
             e.target.mute();
             e.target.playVideo();
             playTimer.current = setTimeout(() => settle(false), PLAY_TIMEOUT);
@@ -127,6 +132,18 @@ export function HeroPage({ data, onNavigate }: HeroPageProps) {
     };
   }, [data.youtubeVideoId, settle]);
 
+  const toggleMute = useCallback(() => {
+    const player = ytPlayerRef.current;
+    if (!player) return;
+    if (isMuted) {
+      player.unMute();
+      player.setVolume(50);
+    } else {
+      player.mute();
+    }
+    setIsMuted(!isMuted);
+  }, [isMuted]);
+
   return (
     <div className="hero-inner">
       <div className="video-wrap" ref={wrapRef}>
@@ -146,6 +163,28 @@ export function HeroPage({ data, onNavigate }: HeroPageProps) {
         />
         <div id="yt-player-wrap" />
       </div>
+      {ytActive && (
+        <button
+          className="hero-volume-btn"
+          onClick={toggleMute}
+          aria-label={isMuted ? 'Unmute' : 'Mute'}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            {isMuted ? (
+              <>
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </>
+            ) : (
+              <>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              </>
+            )}
+          </svg>
+        </button>
+      )}
       <div className="hero-dim" />
       <div className="hero-grain" />
       <div className="hero-content">
