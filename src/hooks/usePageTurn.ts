@@ -272,8 +272,14 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       } else if (touchScrollEl) {
         // At boundary — accumulate extra swipe distance before allowing page turn
         touchBoundaryAccum += Math.abs(delta);
-        touchStartRef.current = currentY;
-        touchConsumed = touchBoundaryAccum < 120;
+        if (touchBoundaryAccum < 120) {
+          touchStartRef.current = currentY;
+          touchConsumed = true;
+        } else {
+          // Buffer passed — stop updating touchStartRef so touchEnd
+          // sees the full remaining swipe delta for the page turn
+          touchConsumed = false;
+        }
       }
     };
 
