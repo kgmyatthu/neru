@@ -13,7 +13,7 @@
  * - Page ordering is determined by the `pages` array
  */
 
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 import { usePageTurn } from '@/hooks/usePageTurn';
 import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
@@ -25,6 +25,7 @@ import { CreditsPage } from '@/components/CreditsPage';
 import { DiscussionPage } from '@/components/DiscussionPage';
 import { PageNav } from '@/components/PageNav';
 import { PageArrows } from '@/components/PageArrows';
+import { NotFoundPage } from '@/components/NotFoundPage';
 import type {
   PageData,
   HeroPageData,
@@ -55,15 +56,17 @@ function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void
   }
 }
 
-/** Resolve initial page index from the current URL path. */
+/** Resolve initial page index from the current URL path. Returns -1 for unknown paths. */
 function getInitialPage(): number {
   const path = window.location.pathname;
   const idx = pages.findIndex((p) => p.path === path);
-  return idx >= 0 ? idx : 0;
+  return idx;
 }
 
 export default function App() {
-  const initialPage = useMemo(getInitialPage, []);
+  const resolvedPage = useMemo(getInitialPage, []);
+  const [is404, setIs404] = useState(resolvedPage < 0);
+  const initialPage = resolvedPage >= 0 ? resolvedPage : 0;
 
   const { currentPage, scrollProgress, scrollDirection, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
@@ -78,6 +81,12 @@ export default function App() {
   const navigateById = useCallback((pageId: string) => {
     const idx = pages.findIndex((p) => p.id === pageId);
     if (idx >= 0) goToPage(idx);
+  }, [goToPage]);
+
+  const goHome = useCallback(() => {
+    setIs404(false);
+    goToPage(0);
+    window.history.pushState(null, '', '/');
   }, [goToPage]);
 
   /** Sync URL when page changes. */
@@ -104,6 +113,16 @@ export default function App() {
   useEffect(() => {
     document.body.classList.toggle('on-hero', isOnHero);
   }, [isOnHero]);
+
+  if (is404) {
+    return (
+      <div className="stage">
+        <PageShell isHero={false} pageNumber="">
+          <NotFoundPage path={window.location.pathname} onGoHome={goHome} />
+        </PageShell>
+      </div>
+    );
+  }
 
   return (
     <>

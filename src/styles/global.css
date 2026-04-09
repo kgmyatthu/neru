@@ -326,6 +326,15 @@
     margin-top: 0.7rem;
   }
 
+  /* 404 page */
+  .not-found-body {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; gap: 1.5rem;
+  }
+  .not-found-body p {
+    max-width: 480px; font-style: italic;
+  }
+
   /* Features page sections */
   .features-section { margin-bottom: 1.5rem; }
   .features-section .art-headline-area { margin-bottom: 0.6rem; }
