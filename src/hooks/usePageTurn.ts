@@ -65,6 +65,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [isAnimating, setIsAnimating] = useState(false);
   const scrollAccumRef = useRef(0);
+  const boundaryAccumRef = useRef(0);
   const touchStartRef = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -194,13 +195,18 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         if (e.deltaY > 0 && !atBottom) {
           scrollEl.scrollTop += e.deltaY;
           scrollAccumRef.current = 0;
+          boundaryAccumRef.current = 0;
           return;
         }
         if (e.deltaY < 0 && !atTop) {
           scrollEl.scrollTop += e.deltaY;
           scrollAccumRef.current = 0;
+          boundaryAccumRef.current = 0;
           return;
         }
+        // At boundary — accumulate extra scroll before allowing page turn
+        boundaryAccumRef.current += Math.abs(e.deltaY);
+        if (boundaryAccumRef.current < 80) return;
       }
 
       scrollAccumRef.current += e.deltaY;
@@ -221,10 +227,12 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   useEffect(() => {
     let touchScrollEl: HTMLElement | null = null;
     let touchConsumed = false;
+    let touchBoundaryAccum = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
       touchStartRef.current = e.touches[0].clientY;
       touchConsumed = false;
+      touchBoundaryAccum = 0;
 
       // Check if the active page has a scrollable .art-body
       const activePage = pageRefs.current[currentRef.current];
@@ -250,8 +258,18 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       // If there's room to scroll in the swipe direction, scroll the content
       if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
         touchConsumed = true;
+        touchBoundaryAccum = 0;
         touchScrollEl.scrollTop += delta;
         touchStartRef.current = currentY;
+      } else if (touchScrollEl) {
+        // At boundary — accumulate extra swipe distance before allowing page turn
+        touchBoundaryAccum += Math.abs(delta);
+        touchStartRef.current = currentY;
+        if (touchBoundaryAccum < 80) {
+          touchConsumed = true;
+        } else {
+          touchConsumed = false;
+        }
       }
     };
 
