@@ -117,16 +117,27 @@
   body.on-hero .page-arrow { color: var(--parchment-dark); }
 
   /* ===== PAGE NAV ===== */
-  .page-nav {
+  .page-nav-wrap {
     position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
-    z-index: 300; display: flex; align-items: center; gap: 0.3rem;
+    z-index: 300; display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+  }
+  .page-nav-hint {
+    font-family: 'Playfair Display', serif; font-size: 0.62rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-faded); opacity: 0.75;
+  }
+  body.on-hero .page-nav-hint { color: var(--parchment-dark); }
+  .page-nav {
+    display: flex; align-items: center; gap: 0.3rem;
   }
   .page-nav .dot {
-    width: 6px; height: 6px; border: 1px solid var(--ink-faded);
+    width: 8px; height: 8px; border: 1.5px solid var(--ink-faded);
     border-radius: 50%; cursor: pointer; transition: all 0.35s ease;
   }
-  .page-nav .dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.5); }
-  .page-nav .dot-line { width: 6px; height: 1px; background: rgba(138,128,112,0.2); }
+  .page-nav .dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.4); }
+  .page-nav .dot-line { position: relative; width: 18px; height: 1.5px; background: rgba(138,128,112,0.2); overflow: hidden; }
+  .page-nav .dot-line-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--ink); transition: width 100ms ease-out; }
+  body.on-hero .page-nav .dot-line-fill { background: var(--parchment); }
 
   body.on-hero .page-nav .dot { border-color: rgba(205,191,154,0.5); }
   body.on-hero .page-nav .dot.active { background: var(--parchment); border-color: var(--parchment); }
@@ -193,6 +204,7 @@
   .flourish { font-size: 1rem; color: var(--parchment-dark); opacity: 0.5; }
   .hero-edition { font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--parchment-dark); opacity: 0.8; }
   .hero-headline { font-size: 1.22rem; font-weight: 300; font-style: italic; color: var(--parchment-dark); max-width: 500px; margin: 0 auto; opacity: 0.75; }
+  .hero-buttons { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
 
   /* ===== ARTICLE PAGE ===== */
   .article-wrap {
@@ -419,7 +431,7 @@
   .util-page {
     width: 100%; max-width: 920px; margin: 0 auto;
     padding: 2.5rem 3rem;
-    display: flex; flex-direction: column; justify-content: center; height: 100vh;
+    display: flex; flex-direction: column; height: 100vh;
   }
 
   .util-masthead {
@@ -452,16 +464,29 @@
   .credit-entry .name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.02rem; color: var(--ink); display: block; }
   .credit-entry .role { font-size: 0.95rem; font-style: italic; color: var(--ink-faded); display: block; margin-top: 0.1rem; }
 
+  /* ===== DISCUSSION PAGE ===== */
+  .discussion-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--parchment-dark) transparent;
+  }
+  .discussion-body iframe { pointer-events: none; }
+  .discussion-body.interactive iframe { pointer-events: auto; }
+
   .finis { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 3px double var(--rule); }
   .finis .end-mark { font-family: 'Playfair Display', serif; font-size: 1rem; display: block; margin-bottom: 0.5rem; color: var(--ink-mid); letter-spacing: 0.3em; }
   .finis p { font-size: 0.85rem; color: var(--ink-faded); font-style: italic; }
 
   @media (max-width: 768px) {
-    .article-wrap { padding: 1.5rem 1.2rem 2.5rem; }
+    .article-wrap { padding: 1.5rem 1.2rem 3.5rem; }
+    .art-body { padding-bottom: 2.5rem; }
     .art-text-cols { columns: 1; }
     .art-fig { margin: 0 0 0.5rem 0; }
     .art-inline-fig, .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
     .drop-cap { font-size: 3rem; }
-    .util-page { padding: 2rem 1.2rem; }
+    .util-page { padding: 2rem 1.2rem 3.5rem; }
     .credit-columns { column-count: 1; }
   }

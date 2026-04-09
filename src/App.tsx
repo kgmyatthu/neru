@@ -13,7 +13,7 @@
  * - Page ordering is determined by the `pages` array
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { usePageTurn } from '@/hooks/usePageTurn';
 import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
@@ -21,6 +21,7 @@ import { HeroPage } from '@/components/HeroPage';
 import { ArticlePage } from '@/components/ArticlePage';
 import { DownloadPage } from '@/components/DownloadPage';
 import { CreditsPage } from '@/components/CreditsPage';
+import { DiscussionPage } from '@/components/DiscussionPage';
 import { PageNav } from '@/components/PageNav';
 import { PageArrows } from '@/components/PageArrows';
 import type {
@@ -29,32 +30,71 @@ import type {
   ArticlePageData,
   DownloadPageData,
   CreditsPageData,
+  DiscussionPageData,
 } from '@/types';
 
 import '@/styles/global.css';
 
 /** Renders the correct content component based on page type. */
-function renderPageContent(page: PageData) {
+function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void) {
   switch (page.type) {
     case 'hero':
-      return <HeroPage data={page as HeroPageData} />;
+      return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} />;
     case 'article':
       return <ArticlePage data={page as ArticlePageData} />;
     case 'download':
       return <DownloadPage data={page as DownloadPageData} />;
     case 'credits':
       return <CreditsPage data={page as CreditsPageData} />;
+    case 'discussion':
+      return <DiscussionPage data={page as DiscussionPageData} />;
   }
 }
 
+/** Resolve initial page index from the current URL path. */
+function getInitialPage(): number {
+  const path = window.location.pathname;
+  const idx = pages.findIndex((p) => p.path === path);
+  return idx >= 0 ? idx : 0;
+}
+
 export default function App() {
-  const { currentPage, turn, goToPage, pageRefs } = usePageTurn({
+  const initialPage = useMemo(getInitialPage, []);
+
+  const { currentPage, scrollProgress, scrollDirection, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
+    initialPage,
     animationDuration: 450,
-    scrollThreshold: 40,
+    scrollThreshold: 100,
   });
 
   const isOnHero = currentPage === 0;
+
+  /** Navigate to a page by its id (e.g., 'download', 'discussion'). */
+  const navigateById = useCallback((pageId: string) => {
+    const idx = pages.findIndex((p) => p.id === pageId);
+    if (idx >= 0) goToPage(idx);
+  }, [goToPage]);
+
+  /** Sync URL when page changes. */
+  useEffect(() => {
+    const targetPath = pages[currentPage].path;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, [currentPage]);
+
+  /** Handle browser back/forward navigation. */
+  useEffect(() => {
+    const handlePopState = () => {
+      const idx = pages.findIndex((p) => p.path === window.location.pathname);
+      if (idx >= 0 && idx !== currentPage) {
+        goToPage(idx);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentPage, goToPage]);
 
   /** Apply body class for hero/parchment color mode. */
   useEffect(() => {
@@ -67,12 +107,10 @@ export default function App() {
       <PageNav
         total={pages.length}
         current={currentPage}
+        scrollProgress={scrollProgress}
+        scrollDirection={scrollDirection}
         onNavigate={goToPage}
       />
-
-      {isOnHero && (
-        <div className="scroll-hint">Scroll to turn pages</div>
-      )}
 
       <PageArrows
         current={currentPage}
@@ -89,7 +127,7 @@ export default function App() {
             isHero={page.type === 'hero'}
             pageNumber={page.pageNumber}
           >
-            {renderPageContent(page)}
+            {renderPageContent(page, navigateById)}
           </PageShell>
         ))}
       </div>
