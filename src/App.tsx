@@ -65,7 +65,7 @@ export default function App() {
     totalPages: pages.length,
     initialPage,
     animationDuration: 450,
-    scrollThreshold: 40,
+    scrollThreshold: 100,
   });
 
   const isOnHero = currentPage === 0;

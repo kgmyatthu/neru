@@ -225,8 +225,8 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         // At boundary — accumulate before allowing page turn
         if (!boundaryPassedRef.current) {
           boundaryAccumRef.current += Math.abs(e.deltaY);
-          setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / 120) * 0.6));
-          if (boundaryAccumRef.current < 120) return;
+          setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / 180) * 0.6));
+          if (boundaryAccumRef.current < 180) return;
           boundaryPassedRef.current = true;
           scrollAccumRef.current = 0;
           return;
@@ -304,13 +304,13 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       } else if (touchScrollEl) {
         // At boundary — accumulate extra swipe distance before allowing page turn
         touchBoundaryAccum += Math.abs(delta);
-        if (touchBoundaryAccum < 120) {
+        if (touchBoundaryAccum < 180) {
           touchStartRef.current = currentY;
           touchConsumed = true;
-          setScrollProgress(Math.min(0.6, (touchBoundaryAccum / 120) * 0.6));
+          setScrollProgress(Math.min(0.6, (touchBoundaryAccum / 180) * 0.6));
         } else {
           touchConsumed = false;
-          setScrollProgress(0.6 + Math.min(0.4, ((touchBoundaryAccum - 120) / 80) * 0.4));
+          setScrollProgress(0.6 + Math.min(0.4, ((touchBoundaryAccum - 180) / 100) * 0.4));
         }
       }
     };
