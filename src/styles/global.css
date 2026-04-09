@@ -125,8 +125,12 @@
     background: linear-gradient(to bottom, transparent 0%, rgba(28,26,20,0.25) 100%);
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
-    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.02) 15%, black 50%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.02) 15%, black 50%);
+    mask-image: linear-gradient(to bottom,
+      transparent 0%, rgba(0,0,0,0.01) 20%, rgba(0,0,0,0.04) 35%,
+      rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 80%, black 100%);
+    -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%, rgba(0,0,0,0.01) 20%, rgba(0,0,0,0.04) 35%,
+      rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.35) 65%, rgba(0,0,0,0.7) 80%, black 100%);
   }
   .page-nav-wrap > * { pointer-events: auto; }
   body.on-hero .page-nav-wrap {
