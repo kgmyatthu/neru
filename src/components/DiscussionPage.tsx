@@ -50,7 +50,7 @@ export function DiscussionPage({ data }: DiscussionPageProps) {
         <p className="dek">Join the conversation &mdash; sign in with GitHub to comment</p>
         <hr className="thin-rule" />
       </div>
-      <div className="discussion-body" ref={giscusRef} />
+      <div className="art-body discussion-body" ref={giscusRef} />
     </div>
   );
 }
