@@ -66,6 +66,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const [isAnimating, setIsAnimating] = useState(false);
   const scrollAccumRef = useRef(0);
   const boundaryAccumRef = useRef(0);
+  const boundaryPassedRef = useRef(false);
   const touchStartRef = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -196,17 +197,24 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
           scrollEl.scrollTop += e.deltaY;
           scrollAccumRef.current = 0;
           boundaryAccumRef.current = 0;
+          boundaryPassedRef.current = false;
           return;
         }
         if (e.deltaY < 0 && !atTop) {
           scrollEl.scrollTop += e.deltaY;
           scrollAccumRef.current = 0;
           boundaryAccumRef.current = 0;
+          boundaryPassedRef.current = false;
           return;
         }
         // At boundary — accumulate extra scroll before allowing page turn
-        boundaryAccumRef.current += Math.abs(e.deltaY);
-        if (boundaryAccumRef.current < 80) return;
+        if (!boundaryPassedRef.current) {
+          boundaryAccumRef.current += Math.abs(e.deltaY);
+          if (boundaryAccumRef.current < 120) return;
+          boundaryPassedRef.current = true;
+          scrollAccumRef.current = 0;
+          return;
+        }
       }
 
       scrollAccumRef.current += e.deltaY;
@@ -265,11 +273,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         // At boundary — accumulate extra swipe distance before allowing page turn
         touchBoundaryAccum += Math.abs(delta);
         touchStartRef.current = currentY;
-        if (touchBoundaryAccum < 80) {
-          touchConsumed = true;
-        } else {
-          touchConsumed = false;
-        }
+        touchConsumed = touchBoundaryAccum < 120;
       }
     };
 
