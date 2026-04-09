@@ -123,16 +123,27 @@
   body.on-hero .page-arrow { color: var(--parchment-dark); }
 
   /* ===== PAGE NAV ===== */
-  .page-nav {
+  .page-nav-wrap {
     position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
-    z-index: 300; display: flex; align-items: center; gap: 0.3rem;
+    z-index: 300; display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+  }
+  .page-nav-hint {
+    font-family: 'Playfair Display', serif; font-size: 0.5rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--ink-faded); opacity: 0.6;
+    animation: hint-fade-in 0.3s ease-out;
+  }
+  body.on-hero .page-nav-hint { color: var(--parchment-dark); }
+  @keyframes hint-fade-in { from { opacity: 0; } to { opacity: 0.6; } }
+  .page-nav {
+    display: flex; align-items: center; gap: 0.3rem;
   }
   .page-nav .dot {
     width: 6px; height: 6px; border: 1px solid var(--ink-faded);
     border-radius: 50%; cursor: pointer; transition: all 0.35s ease;
   }
   .page-nav .dot.active { background: var(--ink); border-color: var(--ink); transform: scale(1.5); }
-  .page-nav .dot-line { position: relative; width: 6px; height: 1px; background: rgba(138,128,112,0.2); overflow: hidden; }
+  .page-nav .dot-line { position: relative; width: 18px; height: 1px; background: rgba(138,128,112,0.2); overflow: hidden; }
   .page-nav .dot-line-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--ink); transition: width 100ms ease-out; }
   body.on-hero .page-nav .dot-line-fill { background: var(--parchment); }
 

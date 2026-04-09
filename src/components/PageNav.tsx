@@ -22,6 +22,10 @@ interface PageNavProps {
 
 export function PageNav({ total, current, scrollProgress, scrollDirection, onNavigate }: PageNavProps) {
   return (
+    <div className="page-nav-wrap">
+      {scrollProgress > 0 && (
+        <div className="page-nav-hint">Keep scrolling to turn page</div>
+      )}
     <div className="page-nav">
       {Array.from({ length: total }, (_, i) => {
         let lineFill = 0;
@@ -49,6 +53,7 @@ export function PageNav({ total, current, scrollProgress, scrollDirection, onNav
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
