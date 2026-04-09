@@ -21,6 +21,7 @@ import { HeroPage } from '@/components/HeroPage';
 import { ArticlePage } from '@/components/ArticlePage';
 import { DownloadPage } from '@/components/DownloadPage';
 import { CreditsPage } from '@/components/CreditsPage';
+import { DiscussionPage } from '@/components/DiscussionPage';
 import { PageNav } from '@/components/PageNav';
 import { PageArrows } from '@/components/PageArrows';
 import type {
@@ -29,6 +30,7 @@ import type {
   ArticlePageData,
   DownloadPageData,
   CreditsPageData,
+  DiscussionPageData,
 } from '@/types';
 
 import '@/styles/global.css';
@@ -44,6 +46,8 @@ function renderPageContent(page: PageData) {
       return <DownloadPage data={page as DownloadPageData} />;
     case 'credits':
       return <CreditsPage data={page as CreditsPageData} />;
+    case 'discussion':
+      return <DiscussionPage data={page as DiscussionPageData} />;
   }
 }
 

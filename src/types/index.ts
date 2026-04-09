@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 // ─── Page System ────────────────────────────────────────────
 
 /** Discriminated union for page types used in the page-turn system. */
-export type PageType = 'hero' | 'article' | 'download' | 'credits';
+export type PageType = 'hero' | 'article' | 'download' | 'credits' | 'discussion';
 
 /** Base page definition shared across all page types. */
 export interface BasePage {
@@ -68,8 +68,21 @@ export interface CreditsPageData extends BasePage {
   entries: CreditEntry[];
 }
 
+/** Discussion/comments page powered by Giscus (GitHub Discussions). */
+export interface DiscussionPageData extends BasePage {
+  type: 'discussion';
+  /** GitHub repository in "owner/repo" format. */
+  repo: string;
+  /** GitHub Discussions category ID (from Giscus setup). */
+  repoId: string;
+  /** Category name for discussions. */
+  category: string;
+  /** Category ID for discussions. */
+  categoryId: string;
+}
+
 /** Union of all page data types. */
-export type PageData = HeroPageData | ArticlePageData | DownloadPageData | CreditsPageData;
+export type PageData = HeroPageData | ArticlePageData | DownloadPageData | CreditsPageData | DiscussionPageData;
 
 // ─── Content Primitives ─────────────────────────────────────
 

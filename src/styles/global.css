@@ -452,6 +452,16 @@
   .credit-entry .name { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.02rem; color: var(--ink); display: block; }
   .credit-entry .role { font-size: 0.95rem; font-style: italic; color: var(--ink-faded); display: block; margin-top: 0.1rem; }
 
+  /* ===== DISCUSSION PAGE ===== */
+  .discussion-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--parchment-dark) transparent;
+  }
+
   .finis { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 3px double var(--rule); }
   .finis .end-mark { font-family: 'Playfair Display', serif; font-size: 1rem; display: block; margin-bottom: 0.5rem; color: var(--ink-mid); letter-spacing: 0.3em; }
   .finis p { font-size: 0.85rem; color: var(--ink-faded); font-style: italic; }

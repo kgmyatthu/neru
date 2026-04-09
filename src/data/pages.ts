@@ -48,11 +48,22 @@ export function buildPages(): PageData[] {
     note: installNote,
   });
 
+  // Discussion
+  pages.push({
+    id: 'discussion',
+    type: 'discussion',
+    pageNumber: `— ${ROMAN[articles.length + 2]} —`,
+    repo: 'kgmyatthu/neru',
+    repoId: '',
+    category: 'General',
+    categoryId: '',
+  });
+
   // Credits
   pages.push({
     id: 'credits',
     type: 'credits',
-    pageNumber: `— ${ROMAN[articles.length + 2]} —`,
+    pageNumber: `— ${ROMAN[articles.length + 3]} —`,
     entries: creditEntries,
   });
 
