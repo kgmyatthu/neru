@@ -19,6 +19,7 @@ import { pages } from '@/data/pages';
 import { PageShell } from '@/components/PageShell';
 import { HeroPage } from '@/components/HeroPage';
 import { ArticlePage } from '@/components/ArticlePage';
+import { FeaturesPage } from '@/components/FeaturesPage';
 import { DownloadPage } from '@/components/DownloadPage';
 import { CreditsPage } from '@/components/CreditsPage';
 import { DiscussionPage } from '@/components/DiscussionPage';
@@ -28,6 +29,7 @@ import type {
   PageData,
   HeroPageData,
   ArticlePageData,
+  FeaturesPageData,
   DownloadPageData,
   CreditsPageData,
   DiscussionPageData,
@@ -36,12 +38,14 @@ import type {
 import '@/styles/global.css';
 
 /** Renders the correct content component based on page type. */
-function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void) {
+function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void, isOnHero?: boolean) {
   switch (page.type) {
     case 'hero':
-      return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} />;
+      return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} isVisible={isOnHero} />;
     case 'article':
       return <ArticlePage data={page as ArticlePageData} />;
+    case 'features':
+      return <FeaturesPage data={page as FeaturesPageData} />;
     case 'download':
       return <DownloadPage data={page as DownloadPageData} />;
     case 'credits':
@@ -127,7 +131,7 @@ export default function App() {
             isHero={page.type === 'hero'}
             pageNumber={page.pageNumber}
           >
-            {renderPageContent(page, navigateById)}
+            {renderPageContent(page, navigateById, isOnHero)}
           </PageShell>
         ))}
       </div>

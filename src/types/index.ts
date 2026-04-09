@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 // ─── Page System ────────────────────────────────────────────
 
 /** Discriminated union for page types used in the page-turn system. */
-export type PageType = 'hero' | 'article' | 'download' | 'credits' | 'discussion';
+export type PageType = 'hero' | 'article' | 'features' | 'download' | 'credits' | 'discussion';
 
 /** Base page definition shared across all page types. */
 export interface BasePage {
@@ -83,8 +83,15 @@ export interface DiscussionPageData extends BasePage {
   categoryId: string;
 }
 
+/** Combined features page with all articles as sections. */
+export interface FeaturesPageData extends BasePage {
+  type: 'features';
+  /** All article sections to render on this page. */
+  articles: Omit<ArticlePageData, 'type' | 'id' | 'pageNumber' | 'path'>[];
+}
+
 /** Union of all page data types. */
-export type PageData = HeroPageData | ArticlePageData | DownloadPageData | CreditsPageData | DiscussionPageData;
+export type PageData = HeroPageData | ArticlePageData | FeaturesPageData | DownloadPageData | CreditsPageData | DiscussionPageData;
 
 // ─── Content Primitives ─────────────────────────────────────
 
