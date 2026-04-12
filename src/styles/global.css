@@ -330,7 +330,6 @@
   .features-grid {
     column-count: 3; column-gap: 1.5rem;
     column-rule: 1.5px solid rgba(58,54,40,0.45);
-    column-fill: auto;
     position: relative;
   }
   /* Ink smudge mask on the whole grid — affects column rules */
