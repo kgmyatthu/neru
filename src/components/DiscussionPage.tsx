@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { NewspaperMasthead } from './NewspaperMasthead';
 import type { DiscussionPageData } from '@/types';
 
 interface DiscussionPageProps {
@@ -41,15 +42,12 @@ export function DiscussionPage({ data }: DiscussionPageProps) {
   }, [data]);
 
   return (
-    <div className="util-page">
-      <div className="util-masthead">
-        <div className="paper-name">Napoleon Empire Realism Ultimate</div>
-        <div className="page-date">Community Forum</div>
-      </div>
-      <div className="section-head">
-        <h2>Discussion</h2>
-        <p className="dek">Join the conversation &mdash; sign in with GitHub to comment</p>
-        <hr className="thin-rule" />
+    <div className="article-wrap">
+      <NewspaperMasthead label="Discussion" section="Community Forum" />
+      <div className="art-headline-area">
+        <h2 className="art-headline">Discussion</h2>
+        <p className="art-subhead">Join the conversation — sign in with GitHub to comment</p>
+        <div className="art-headline-rule" />
       </div>
       <div
         className={`art-body discussion-body${interactive ? ' interactive' : ''}`}

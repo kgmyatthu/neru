@@ -4,6 +4,7 @@
  * Contributor names with URLs render as clickable links.
  */
 
+import { NewspaperMasthead } from './NewspaperMasthead';
 import type { CreditsPageData } from '@/types';
 
 interface CreditsPageProps {
@@ -12,15 +13,12 @@ interface CreditsPageProps {
 
 export function CreditsPage({ data }: CreditsPageProps) {
   return (
-    <div className="util-page">
-      <div className="util-masthead">
-        <div className="paper-name">Napoleon Empire Realism Ultimate</div>
-        <div className="page-date">Acknowledgements</div>
-      </div>
-      <div className="section-head">
-        <h2>Credits &amp; Acknowledgements</h2>
-        <p className="dek">The persons responsible for this endeavour</p>
-        <hr className="thin-rule" />
+    <div className="article-wrap">
+      <NewspaperMasthead label="Credits" section="Acknowledgements" />
+      <div className="art-headline-area">
+        <h2 className="art-headline">Credits & Acknowledgements</h2>
+        <p className="art-subhead">The persons responsible for this endeavour</p>
+        <div className="art-headline-rule" />
       </div>
       <div className="credit-columns">
         {data.entries.map((entry) => (
