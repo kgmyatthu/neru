@@ -344,6 +344,10 @@
     overflow: hidden;
     font-size: 0.92rem; line-height: 1.55;
   }
+  .features-section-body .art-text-flow,
+  .features-section-body .art-text-cols {
+    font-size: inherit; line-height: inherit;
+  }
   .features-section-body .art-text-cols { columns: 1; }
   .features-section-body .art-inline-fig { width: 55%; }
 
