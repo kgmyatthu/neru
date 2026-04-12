@@ -5,9 +5,6 @@ interface FeaturesPageProps {
   data: FeaturesPageData;
 }
 
-/** Articles at these indices span the full row for visual variety. */
-const WIDE_INDICES = new Set([0, 3]);
-
 export function FeaturesPage({ data }: FeaturesPageProps) {
   return (
     <div className="article-wrap">
@@ -15,10 +12,7 @@ export function FeaturesPage({ data }: FeaturesPageProps) {
       <div className="art-body">
         <div className="features-grid">
           {data.articles.map((article, i) => (
-            <section
-              key={i}
-              className={`features-section${WIDE_INDICES.has(i) ? ' wide' : ''}`}
-            >
+            <section key={i} className="features-section">
               <div className="art-headline-area">
                 <h2 className="art-headline">{article.headline}</h2>
                 <p className="art-subhead">{article.subhead}</p>
