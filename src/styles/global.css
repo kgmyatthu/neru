@@ -326,13 +326,42 @@
   }
 
   /* Features page — newspaper column layout */
+  /* Features page — newspaper column layout */
   .features-grid {
-    column-count: 3; column-gap: 1.5rem;
+    column-count: 3; column-gap: 0;
+    column-rule: 0.5px solid rgba(58,54,40,0.3);
   }
   .features-section {
     break-inside: avoid;
-    padding-bottom: 0.8rem; margin-bottom: 0.8rem;
-    border-bottom: 1px solid var(--rule);
+    position: relative;
+    padding: 0 1.2rem 1rem; margin-bottom: 0.6rem;
+  }
+  /* Smudged bottom rule — thicker, imperfect ink line */
+  .features-section::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0.6rem; right: 0.6rem;
+    height: 1.5px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(58,54,40,0.15) 2%,
+      rgba(58,54,40,0.5) 5%,
+      rgba(58,54,40,0.6) 12%,
+      rgba(58,54,40,0.35) 20%,
+      rgba(58,54,40,0.55) 28%,
+      rgba(58,54,40,0.7) 35%,
+      rgba(58,54,40,0.4) 42%,
+      rgba(58,54,40,0.65) 50%,
+      rgba(58,54,40,0.3) 58%,
+      rgba(58,54,40,0.6) 65%,
+      rgba(58,54,40,0.5) 72%,
+      rgba(58,54,40,0.7) 78%,
+      rgba(58,54,40,0.35) 85%,
+      rgba(58,54,40,0.55) 92%,
+      rgba(58,54,40,0.2) 97%,
+      transparent 100%
+    );
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='r'%3E%3CfeTurbulence baseFrequency='0.15 0.8' numOctaves='3' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='4' filter='url(%23r)'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='r'%3E%3CfeTurbulence baseFrequency='0.15 0.8' numOctaves='3' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='4' filter='url(%23r)'/%3E%3C/svg%3E");
   }
   .features-section .art-headline-area { margin-bottom: 0.4rem; }
   .features-section .art-headline {
@@ -342,7 +371,7 @@
   .features-section .art-subhead { font-size: 0.7rem; }
   .features-section-body {
     overflow: hidden;
-    font-size: 0.92rem; line-height: 1.55;
+    font-size: 1rem; line-height: 1.6;
   }
   .features-section-body .art-text-flow,
   .features-section-body .art-text-cols {
@@ -573,7 +602,7 @@
     .drop-cap { font-size: 3rem; }
     .util-page { padding: 2rem 1.2rem 3.5rem; }
     .credit-columns { column-count: 1; }
-    .features-grid { column-count: 1; }
+    .features-grid { column-count: 1; column-rule: none; }
     .features-section-body .art-inline-fig,
     .features-section-body .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
   }
