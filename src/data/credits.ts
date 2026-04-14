@@ -30,9 +30,4 @@ export const creditEntries: CreditEntry[] = [
     name: 'Sirlion',
     role: 'Battleterrain max — campaign battle map sizes',
   },
-  {
-    name: 'DarthMod Napoleon',
-    role: '40-unit UI mod',
-    url: 'https://www.moddb.com/mods/darthmod-napoleon',
-  },
 ];
