@@ -23,12 +23,12 @@ export const articles: ArticleContent[] = [
   {
     articleLabel: 'Article I',
     headline: 'NER Adjusted for Large Scale Unit Size',
-    subhead: 'Designed for 2.7× campaign unit multiplier — artillery, cavalry, and infantry rebalanced',
+    subhead: 'Designed for 1.69× campaign unit multiplier — artillery, cavalry, and infantry rebalanced',
     content: React.createElement('div', { className: 'art-text-flow' },
       React.createElement('p', null,
         React.createElement('span', { className: 'drop-cap' }, 'B'),
         React.createElement('span', { className: 'first-word' }, 'uilt'),
-        ' on NER\'s ballistic model, designed for 2.7× unit multiplier. At this scale the base game\'s balancing breaks down, so artillery, cavalry, and infantry have been rebalanced.'
+        ' on NER\'s ballistic model, designed for 1.69× unit multiplier. At this scale the base game\'s balancing breaks down, so artillery, cavalry, and infantry have been rebalanced.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/artillery.png',
@@ -42,7 +42,7 @@ export const articles: ArticleContent[] = [
       ),
       React.createElement('p', null,
         React.createElement('strong', null, 'Cavalry'),
-        ' — troop sizes increased to match the larger unit scale. The game has a hardcoded 400-man cap for square formation — at 2.7× infantry sits around 600, so they cannot form square. To compensate, cavalry is nerfed: frontal charges into fresh, deep-rank infantry still end badly, and even a winning charge depletes the unit to the point it\'s rarely worth it unless desperate. Cavalry is most effective on flanks, against routers, or isolated artillery.'
+        ' — troop sizes increased to match the larger unit scale. The game engine disables square formation for any infantry unit above 400 men — at 1.69× most line infantry sits right at that threshold (~400), the highest it can go while retaining the ability to form square. This restores one of the period\'s defining tactical interactions: cavalry must respect infantry that has time to form square, just as it did on historical battlefields. Frontal charges into a prepared square are suicidal, and even a well-timed charge against infantry in line is costly if the battalion is fresh and deep-ranked. Cavalry remains most effective on flanks, against routers, and when catching infantry mid-manoeuvre before a square can form.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/rank-spacing.jpg',
@@ -172,7 +172,7 @@ export const articles: ArticleContent[] = [
   {
     articleLabel: 'Article V',
     headline: 'Maximised Battle Maps & AI Formations',
-    subhead: 'Larger maps, new AI decision-making for 30–40 unit armies',
+    subhead: 'Larger maps, new AI decision-making for 55–60 unit armies',
     content: React.createElement('div', { className: 'art-text-flow' },
       React.createElement('p', null,
         React.createElement('span', { className: 'drop-cap' }, 'C'),
@@ -187,18 +187,18 @@ export const articles: ArticleContent[] = [
         width: '68%',
       }),
       React.createElement('p', null,
-        'This is critical for the mod\'s intended 2.7× unit multiplier. At that scale, default maps leave almost no room between deployment zones, and large 30–40 unit armies end up stacked on top of each other. The maximised maps give formations the space to deploy properly and fight as they would on a real Napoleonic battlefield.'
+        'This is critical for the mod\'s intended 1.69× unit multiplier. At that scale, default maps leave almost no room between deployment zones, and large 55–60 unit armies end up stacked on top of each other. The maximised maps give formations the space to deploy properly and fight as they would on a real Napoleonic battlefield.'
       ),
       React.createElement('p', null,
         React.createElement('strong', null, 'AI Battle Formations'),
-        ' — the AI\'s formation logic has been adjusted to better handle 30–40 unit armies. The base game\'s AI was not designed for armies this large and tends to clump units together or leave flanks exposed.'
+        ' — the AI\'s formation logic has been adjusted to better handle 55–60 unit armies. The base game\'s AI was not designed for armies this large and tends to clump units together or leave flanks exposed.'
       ),
       React.createElement('p', null,
         'The changes aim to help the AI distribute units more evenly across the deployment zone and increase the likelihood of cavalry being placed on the flanks. There is also a higher probability of the AI attempting flanking manoeuvres with both cavalry and infantry. That said, results are mixed — the AI still struggles with complex terrain and can behave unpredictably depending on the player\'s own formation choices. It\'s an improvement over the default behaviour, not a fix.'
       ),
       React.createElement('p', null,
-        React.createElement('strong', null, '40-Unit UI'),
-        ' — to support the larger armies, a 40-unit UI mod has been extracted from DarthMod and included. This replaces the default unit card panel to display up to 40 units on screen, which the base game\'s interface cannot handle.'
+        React.createElement('strong', null, '60-Unit UI'),
+        ' — to support 55–60 unit full-stack armies, a custom 60-unit UI has been built through intensive reverse engineering of the game\'s interface files. Campaign, battle, and pre-battle screens all display the full 60 unit cards at studio quality. This is entirely new work — not extracted from any existing mod — and replaces the base game\'s default unit card panel, which was never designed to handle armies of this size.'
       ),
       React.createElement('p', null,
         'The terrain templates are included as-is from Sirlion\'s original work. The AI formation changes are custom to this mod.'

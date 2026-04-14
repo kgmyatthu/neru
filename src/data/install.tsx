@@ -41,7 +41,7 @@ export const installSteps: InstallStep[] = [
     content: React.createElement(React.Fragment, null,
       'In the same scripts folder, open ', C({ children: 'preferences.script.txt' }),
       ' with Notepad. Find ', C({ children: 'campaign_unit_multiplier' }),
-      ' and change the value to ', C({ children: '2.7' }),
+      ' and change the value to ', C({ children: '1.69' }),
       '. Ensure ', C({ children: 'gfx_unit_scale' }),
       ' is set to ', C({ children: '3' }),
       '. Save and set the file to read-only.',
