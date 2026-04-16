@@ -292,13 +292,13 @@
   }
 
   .masthead-nav {
-    display: flex; align-items: baseline; gap: 0.15rem;
+    display: flex; align-items: baseline; gap: 0.25rem;
     font-family: 'Playfair Display', serif;
-    font-size: 0.58rem; font-style: italic;
+    font-size: 0.75rem; font-style: italic;
   }
 
   .masthead-nav .sep {
-    color: var(--ink-faded); margin: 0 0.2rem;
+    color: var(--ink-faded); margin: 0 0.3rem;
   }
 
   .masthead-nav-link {
@@ -306,6 +306,8 @@
     cursor: pointer;
     color: var(--ink-faded);
     letter-spacing: 0.05em;
+    text-decoration: underline;
+    text-underline-offset: 2px;
     transition: color 0.2s ease;
   }
   .masthead-nav-link:hover {
