@@ -10,9 +10,10 @@ import type { DiscussionPageData } from '@/types';
 
 interface DiscussionPageProps {
   data: DiscussionPageData;
+  onNavigate?: (pageId: string) => void;
 }
 
-export function DiscussionPage({ data }: DiscussionPageProps) {
+export function DiscussionPage({ data, onNavigate }: DiscussionPageProps) {
   const giscusRef = useRef<HTMLDivElement>(null);
   const loaded = useRef(false);
   const [interactive, setInteractive] = useState(false);
@@ -43,7 +44,7 @@ export function DiscussionPage({ data }: DiscussionPageProps) {
 
   return (
     <div className="article-wrap">
-      <NewspaperMasthead label="Discussion" section="Community Forum" />
+      <NewspaperMasthead label="Discussion" activePage="discussion" onNavigate={onNavigate} />
       <div className="art-headline-area">
         <h2 className="art-headline">Discussion</h2>
         <p className="art-subhead">Join the conversation — sign in with GitHub to comment</p>

@@ -9,12 +9,13 @@ import type { CreditsPageData } from '@/types';
 
 interface CreditsPageProps {
   data: CreditsPageData;
+  onNavigate?: (pageId: string) => void;
 }
 
-export function CreditsPage({ data }: CreditsPageProps) {
+export function CreditsPage({ data, onNavigate }: CreditsPageProps) {
   return (
     <div className="article-wrap">
-      <NewspaperMasthead label="Credits" section="Acknowledgements" />
+      <NewspaperMasthead label="Credits" activePage="credits" onNavigate={onNavigate} />
       <div className="art-headline-area">
         <h2 className="art-headline">Credits & Acknowledgements</h2>
         <p className="art-subhead">The persons responsible for this endeavour</p>
