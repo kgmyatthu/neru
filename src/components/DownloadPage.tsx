@@ -9,12 +9,13 @@ import type { DownloadPageData } from '@/types';
 
 interface DownloadPageProps {
   data: DownloadPageData;
+  onNavigate?: (pageId: string) => void;
 }
 
-export function DownloadPage({ data }: DownloadPageProps) {
+export function DownloadPage({ data, onNavigate }: DownloadPageProps) {
   return (
     <div className="article-wrap">
-      <NewspaperMasthead label="Installation" section="Acquisition & Deployment" />
+      <NewspaperMasthead label="Installation" activePage="download" onNavigate={onNavigate} />
       <div className="art-headline-area">
         <h2 className="art-headline">Instructions for Installation</h2>
         <p className="art-subhead">A brief guide to acquiring & deploying the modification</p>

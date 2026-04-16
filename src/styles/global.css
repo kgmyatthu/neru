@@ -280,7 +280,9 @@
   .art-masthead .name {
     font-family: 'UnifrakturMaguntia', cursive;
     font-size: 1rem; color: var(--ink-mid);
+    cursor: pointer; transition: color 0.2s ease;
   }
+  .art-masthead .name:hover { color: var(--accent); }
 
   .art-masthead .label {
     font-family: 'Playfair Display', serif;
@@ -289,8 +291,30 @@
     color: var(--accent);
   }
 
-  .art-masthead .date {
-    font-size: 0.62rem; font-style: italic; color: var(--ink-faded);
+  .masthead-nav {
+    display: flex; align-items: baseline; gap: 0.15rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.58rem; font-style: italic;
+  }
+
+  .masthead-nav .sep {
+    color: var(--ink-faded); margin: 0 0.2rem;
+  }
+
+  .masthead-nav-link {
+    all: unset;
+    cursor: pointer;
+    color: var(--ink-faded);
+    letter-spacing: 0.05em;
+    transition: color 0.2s ease;
+  }
+  .masthead-nav-link:hover {
+    color: var(--ink-mid);
+  }
+  .masthead-nav-link.active {
+    color: var(--accent);
+    font-weight: 700;
+    font-style: normal;
   }
 
   .art-thin-rule {
