@@ -39,6 +39,14 @@ export function DownloadPage({ data }: DownloadPageProps) {
           >
             ↓&ensp;Download
           </a>
+          <a
+            href="https://discord.gg/zvvFHtxx"
+            className="btn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🎮&ensp;Join Discord
+          </a>
           <span className="dl-meta">
             {data.version} · {data.fileSize}
           </span>
