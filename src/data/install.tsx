@@ -25,19 +25,27 @@ export const installSteps: InstallStep[] = [
   {
     numeral: 'III.',
     content: React.createElement(React.Fragment, null,
+      'If ', C({ children: 'DMN_40UnitsUI.pack' }),
+      ' exists in your ', C({ children: 'data' }),
+      ' folder, delete it. Newer versions of NERU include a custom UI mod that can comfortably display up to 60 units.',
+    ),
+  },
+  {
+    numeral: 'IV.',
+    content: React.createElement(React.Fragment, null,
       'Place all extracted mod files into the ', C({ children: 'data' }),
       ' folder above. Overwrite existing files when prompted.',
     ),
   },
   {
-    numeral: 'IV.',
+    numeral: 'V.',
     content: React.createElement(React.Fragment, null,
       'Copy ', C({ children: 'user.script.txt' }),
       ' from the mod archive into ', C({ children: '%AppData%\\The Creative Assembly\\Napoleon\\scripts' }),
     ),
   },
   {
-    numeral: 'V.',
+    numeral: 'VI.',
     content: React.createElement(React.Fragment, null,
       'In the same scripts folder, open ', C({ children: 'preferences.script.txt' }),
       ' with Notepad. Find ', C({ children: 'campaign_unit_multiplier' }),
@@ -48,7 +56,7 @@ export const installSteps: InstallStep[] = [
     ),
   },
   {
-    numeral: 'VI.',
+    numeral: 'VII.',
     content: 'Launch via Steam. The mod loads automatically upon start.',
   },
 ];

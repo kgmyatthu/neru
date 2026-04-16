@@ -23,12 +23,12 @@ export const articles: ArticleContent[] = [
   {
     articleLabel: 'Article I',
     headline: 'NER Adjusted for Large Scale Unit Size',
-    subhead: 'Designed for 1.69× campaign unit multiplier — artillery, cavalry, and infantry rebalanced',
+    subhead: 'Designed for 60-unit armies with ~407 men per line infantry — artillery, cavalry, and infantry rebalanced',
     content: React.createElement('div', { className: 'art-text-flow' },
       React.createElement('p', null,
         React.createElement('span', { className: 'drop-cap' }, 'B'),
         React.createElement('span', { className: 'first-word' }, 'uilt'),
-        ' on NER\'s ballistic model, designed for 1.69× unit multiplier. At this scale the base game\'s balancing breaks down, so artillery, cavalry, and infantry have been rebalanced.'
+        ' on NER\'s ballistic model, designed for 60-unit armies where each line infantry battalion fields around 407 men — the maximum the game engine allows before disabling square formation. At this scale the base game\'s balancing breaks down, so artillery, cavalry, and infantry have been rebalanced.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/artillery.png',
@@ -42,7 +42,7 @@ export const articles: ArticleContent[] = [
       ),
       React.createElement('p', null,
         React.createElement('strong', null, 'Cavalry'),
-        ' — troop sizes increased to match the larger unit scale. The game engine disables square formation for any infantry unit above 400 men — at 1.69× most line infantry sits right at that threshold (~400), the highest it can go while retaining the ability to form square. This restores one of the period\'s defining tactical interactions: cavalry must respect infantry that has time to form square, just as it did on historical battlefields. Frontal charges into a prepared square are suicidal, and even a well-timed charge against infantry in line is costly if the battalion is fresh and deep-ranked. Cavalry remains most effective on flanks, against routers, and when catching infantry mid-manoeuvre before a square can form.'
+        ' — troop sizes increased to match the larger unit scale. The game engine disables square formation for any infantry unit above roughly 407 men — line infantry in this mod sits right at that threshold, the highest it can go while retaining the ability to form square. This restores one of the period\'s defining tactical interactions: cavalry must respect infantry that has time to form square, just as it did on historical battlefields. Frontal charges into a prepared square are suicidal, and even a well-timed charge against infantry in line is costly if the battalion is fresh and deep-ranked. Cavalry remains most effective on flanks, against routers, and when catching infantry mid-manoeuvre before a square can form.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/rank-spacing.jpg',
@@ -187,7 +187,7 @@ export const articles: ArticleContent[] = [
         width: '68%',
       }),
       React.createElement('p', null,
-        'This is critical for the mod\'s intended 1.69× unit multiplier. At that scale, default maps leave almost no room between deployment zones, and large 55–60 unit armies end up stacked on top of each other. The maximised maps give formations the space to deploy properly and fight as they would on a real Napoleonic battlefield.'
+        'This is critical for the mod\'s intended 60-unit army scale. At that size, default maps leave almost no room between deployment zones, and large 55–60 unit armies end up stacked on top of each other. The maximised maps give formations the space to deploy properly and fight as they would on a real Napoleonic battlefield.'
       ),
       React.createElement('p', null,
         React.createElement('strong', null, 'AI Battle Formations'),
