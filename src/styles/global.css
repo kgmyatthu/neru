@@ -361,25 +361,24 @@
     position: relative;
     padding: 0 0 1.2rem; margin-bottom: 0.8rem;
   }
-  /* Aged ink side rule — printed solid, softly degraded over years of handling.
-     fractalNoise + table transfer: smooth organic variation biased toward opaque,
-     with gentle thinning in spots — no hard edges. */
+  /* Aged ink side rule — heavy degradation, ink worn away in broad patches.
+     Low-frequency noise with wide opacity range and Gaussian blur to soften edges. */
   .features-section::before {
     content: '';
     position: absolute; top: 0; bottom: 0.8rem; left: -0.9rem;
     width: 1.5px;
-    background: rgba(58,54,40,0.85);
-    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='5' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.1 0.35 0.6 0.78 0.88 0.94 1 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='4' height='400' filter='url(%23a)'/%3E%3C/svg%3E");
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='5' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.1 0.35 0.6 0.78 0.88 0.94 1 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='4' height='400' filter='url(%23a)'/%3E%3C/svg%3E");
+    background: rgba(58,54,40,0.8);
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0 0.05 0.2 0.5 0.75 0.9 1'/%3E%3C/feComponentTransfer%3E%3CfeGaussianBlur stdDeviation='0 1.5'/%3E%3C/filter%3E%3Crect width='4' height='400' filter='url(%23a)'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0 0.05 0.2 0.5 0.75 0.9 1'/%3E%3C/feComponentTransfer%3E%3CfeGaussianBlur stdDeviation='0 1.5'/%3E%3C/filter%3E%3Crect width='4' height='400' filter='url(%23a)'/%3E%3C/svg%3E");
   }
-  /* Aged ink bottom rule — same soft degradation, horizontal */
+  /* Aged ink bottom rule — same heavy degradation, horizontal */
   .features-section::after {
     content: '';
     position: absolute; bottom: 0; left: 0; right: 0;
     height: 1.5px;
-    background: rgba(58,54,40,0.85);
-    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 800 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008' numOctaves='5' seed='12'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.08 0.3 0.55 0.75 0.86 0.93 1 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='800' height='4' filter='url(%23b)'/%3E%3C/svg%3E");
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 800 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008' numOctaves='5' seed='12'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.08 0.3 0.55 0.75 0.86 0.93 1 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='800' height='4' filter='url(%23b)'/%3E%3C/svg%3E");
+    background: rgba(58,54,40,0.8);
+    mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 800 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='4' seed='12'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0 0.04 0.18 0.45 0.7 0.88 1'/%3E%3C/feComponentTransfer%3E%3CfeGaussianBlur stdDeviation='1.5 0'/%3E%3C/filter%3E%3Crect width='800' height='4' filter='url(%23b)'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 800 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='4' seed='12'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0 0.04 0.18 0.45 0.7 0.88 1'/%3E%3C/feComponentTransfer%3E%3CfeGaussianBlur stdDeviation='1.5 0'/%3E%3C/filter%3E%3Crect width='800' height='4' filter='url(%23b)'/%3E%3C/svg%3E");
   }
   .features-section .art-headline-area { margin-bottom: 0.4rem; }
   .features-section .art-headline {
