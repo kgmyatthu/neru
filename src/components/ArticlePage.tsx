@@ -13,12 +13,13 @@ import type { ArticlePageData } from '@/types';
 interface ArticlePageProps {
   /** Article page data. */
   data: ArticlePageData;
+  onNavigate?: (pageId: string) => void;
 }
 
-export function ArticlePage({ data }: ArticlePageProps) {
+export function ArticlePage({ data, onNavigate }: ArticlePageProps) {
   return (
     <div className="article-wrap">
-      <NewspaperMasthead label={data.articleLabel} section="Features" />
+      <NewspaperMasthead label={data.articleLabel} activePage="features" onNavigate={onNavigate} />
       <div className="art-headline-area">
         <h2 className="art-headline">{data.headline}</h2>
         <p className="art-subhead">{data.subhead}</p>

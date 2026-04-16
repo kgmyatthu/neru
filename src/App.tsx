@@ -43,15 +43,15 @@ function renderPageContent(page: PageData, onNavigate?: (pageId: string) => void
     case 'hero':
       return <HeroPage data={page as HeroPageData} onNavigate={onNavigate} isVisible={isOnHero} />;
     case 'article':
-      return <ArticlePage data={page as ArticlePageData} />;
+      return <ArticlePage data={page as ArticlePageData} onNavigate={onNavigate} />;
     case 'features':
-      return <FeaturesPage data={page as FeaturesPageData} />;
+      return <FeaturesPage data={page as FeaturesPageData} onNavigate={onNavigate} />;
     case 'download':
-      return <DownloadPage data={page as DownloadPageData} />;
+      return <DownloadPage data={page as DownloadPageData} onNavigate={onNavigate} />;
     case 'credits':
-      return <CreditsPage data={page as CreditsPageData} />;
+      return <CreditsPage data={page as CreditsPageData} onNavigate={onNavigate} />;
     case 'discussion':
-      return <DiscussionPage data={page as DiscussionPageData} />;
+      return <DiscussionPage data={page as DiscussionPageData} onNavigate={onNavigate} />;
   }
 }
 

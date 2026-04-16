@@ -252,6 +252,14 @@ export function HeroPage({ data, onNavigate, isVisible = true }: HeroPageProps) 
           >
             💬&ensp;Discussion
           </button>
+          <a
+            href="https://discord.gg/zvvFHtxx"
+            className="btn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🎮&ensp;Join Discord
+          </a>
         </div>
       </div>
     </div>

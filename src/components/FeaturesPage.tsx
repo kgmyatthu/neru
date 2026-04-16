@@ -3,12 +3,13 @@ import type { FeaturesPageData } from '@/types';
 
 interface FeaturesPageProps {
   data: FeaturesPageData;
+  onNavigate?: (pageId: string) => void;
 }
 
-export function FeaturesPage({ data }: FeaturesPageProps) {
+export function FeaturesPage({ data, onNavigate }: FeaturesPageProps) {
   return (
     <div className="article-wrap">
-      <NewspaperMasthead label="Features" section="Features" />
+      <NewspaperMasthead label="Features" activePage="features" onNavigate={onNavigate} />
       <div className="art-body">
         <div className="features-grid">
           {data.articles.map((article, i) => (
