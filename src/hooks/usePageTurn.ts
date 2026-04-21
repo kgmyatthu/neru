@@ -37,10 +37,9 @@ const DEFAULTS = {
   swipeThreshold: 30,
 } as const;
 
-/** Soft radial blur (CSS `filter: blur`) — kept low so content stays readable. */
-const SOFT_BLUR_MAX_PX = 5;
-/** Directional horizontal motion blur (via SVG `feGaussianBlur` stdDeviation X). */
-const MOTION_BLUR_MAX_PX = 34;
+/** Directional horizontal motion blur (via SVG `feGaussianBlur` stdDeviation X).
+ *  Pure horizontal streak — no radial component — so it reads as motion, not DOF. */
+const MOTION_BLUR_MAX_PX = 20;
 /** Rolling-shutter skew angle (deg) — peaks at high velocity. */
 const ROLLING_SHUTTER_MAX_DEG = 3.2;
 /** Horizontal stretch at peak velocity. */
@@ -102,18 +101,16 @@ function applyMicrofilmTransform(
   velocity: number,
   direction: TurnDirection,
 ) {
-  const softBlur = velocity * SOFT_BLUR_MAX_PX;
   const shutterSkew = velocity * ROLLING_SHUTTER_MAX_DEG * -direction;
   const stretch = 1 + velocity * STRETCH_MAX;
 
   pageEl.style.transform =
     `translate3d(${offsetFraction * 100}%, 0, 0) skewX(${shutterSkew}deg) scaleX(${stretch})`;
 
-  if (velocity > 0.015) {
-    pageEl.style.filter = `url(#${MOTION_BLUR_FILTER_ID}) blur(${softBlur}px)`;
-  } else {
-    pageEl.style.filter = '';
-  }
+  // Directional (x-axis-only) blur via SVG — no radial component, so it reads
+  // as motion rather than DOF. The filter's stdDeviation is updated per frame
+  // by the animation loop.
+  pageEl.style.filter = velocity > 0.015 ? `url(#${MOTION_BLUR_FILTER_ID})` : '';
 }
 
 export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
