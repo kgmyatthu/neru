@@ -60,7 +60,7 @@ export const articles: ArticleContent[] = [
   // ─── Article II: Campaign Rework & AI Formations ──────────
   {
     articleLabel: 'Article II',
-    headline: 'Campaign Rework & AI Formations',
+    headline: 'Immersive Campaign Rework — Armies at Period Strength',
     subhead: 'An economy sized for corps-strength warfare, with AI tuned for 55–60 unit armies',
     content: React.createElement('div', { className: 'art-text-flow' },
       React.createElement(InlineFigure, {
