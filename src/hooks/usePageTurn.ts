@@ -52,11 +52,14 @@ const GHOST_SLOPES = [0.48, 0.38, 0.3, 0.23, 0.17, 0.12, 0.07, 0.04] as const;
 const GHOST_FRACTIONS = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0] as const;
 
 /** Duration of post-transition vignette flicker + camera shake (ms). */
-const POST_FX_DURATION_MS = 1500;
-/** Peak vignette overlay opacity during flicker. */
-const FLICKER_PEAK_OPACITY = 0.42;
+const POST_FX_DURATION_MS = 1300;
+/** Peak vignette overlay opacity during flicker — kept subtle, projector-ambient rather than horror. */
+const FLICKER_PEAK_OPACITY = 0.11;
 /** Peak shake amplitude in px (translate X/Y each up to ±this). */
-const SHAKE_PEAK_PX = 2.6;
+const SHAKE_PEAK_PX = 0.7;
+/** Minimum ms between noise re-rolls — throttling frame-rate updates to ~12 Hz makes the
+ *  flicker read as real film grain rather than digital strobe. */
+const POST_FX_NOISE_INTERVAL_MS = 85;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
@@ -235,6 +238,16 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     const vignette = vignetteRef.current;
     const stage = stageElRef.current;
     const startTs = performance.now();
+    // Cached noise samples — refreshed at POST_FX_NOISE_INTERVAL_MS and lerped
+    // between samples each frame, so the effect feels like soft analog drift
+    // rather than per-frame digital jitter.
+    let prevNoiseTs = 0;
+    let prevFlickerNoise = 0;
+    let nextFlickerNoise = Math.random();
+    let prevShakeX = 0;
+    let prevShakeY = 0;
+    let nextShakeX = (Math.random() - 0.5) * 2;
+    let nextShakeY = (Math.random() - 0.5) * 2;
 
     const tick = (now: number) => {
       const elapsed = now - startTs;
@@ -246,19 +259,30 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       }
       const decay = 1 - elapsed / POST_FX_DURATION_MS; // 1 → 0
 
+      // Refresh noise sample on a fixed interval; otherwise interpolate.
+      const sinceNoise = now - prevNoiseTs;
+      if (sinceNoise >= POST_FX_NOISE_INTERVAL_MS) {
+        prevFlickerNoise = nextFlickerNoise;
+        nextFlickerNoise = Math.random();
+        prevShakeX = nextShakeX;
+        prevShakeY = nextShakeY;
+        nextShakeX = (Math.random() - 0.5) * 2;
+        nextShakeY = (Math.random() - 0.5) * 2;
+        prevNoiseTs = now;
+      }
+      const lerpT = Math.min(1, sinceNoise / POST_FX_NOISE_INTERVAL_MS);
+      const flickerNoise = prevFlickerNoise + (nextFlickerNoise - prevFlickerNoise) * lerpT;
+      const shakeX = prevShakeX + (nextShakeX - prevShakeX) * lerpT;
+      const shakeY = prevShakeY + (nextShakeY - prevShakeY) * lerpT;
+
       if (vignette) {
-        // Random-noise flicker, amplitude gated by decay. Slight base offset so
-        // the vignette never fully vanishes during the flicker window.
-        const noise = Math.random();
-        const op = (noise * 0.85 + 0.15) * decay * FLICKER_PEAK_OPACITY;
+        const op = (flickerNoise * 0.7 + 0.3) * decay * FLICKER_PEAK_OPACITY;
         vignette.style.opacity = op.toFixed(3);
       }
 
       if (stage) {
         const amp = decay * SHAKE_PEAK_PX;
-        const dx = (Math.random() - 0.5) * 2 * amp;
-        const dy = (Math.random() - 0.5) * 2 * amp;
-        stage.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+        stage.style.transform = `translate(${(shakeX * amp).toFixed(2)}px, ${(shakeY * amp).toFixed(2)}px)`;
       }
 
       postFxRafRef.current = requestAnimationFrame(tick);
