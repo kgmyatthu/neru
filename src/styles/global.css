@@ -600,13 +600,23 @@
   }
 
   @media (max-width: 768px) {
-    .article-wrap { padding: 1.3rem 1.1rem 6rem; }
+    .article-wrap {
+      padding-top: max(1.3rem, calc(env(safe-area-inset-top, 0px) + 0.6rem));
+      padding-right: max(1.1rem, env(safe-area-inset-right, 0px));
+      padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+      padding-left: max(1.1rem, env(safe-area-inset-left, 0px));
+    }
     .art-body { padding-bottom: 1rem; }
     .art-text-cols { columns: 1; }
     .art-fig { margin: 0 0 0.5rem 0; }
     .art-inline-fig, .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
     .drop-cap { font-size: 3rem; }
-    .util-page { padding: 2rem 1.2rem 6rem; }
+    .util-page {
+      padding-top: max(2rem, calc(env(safe-area-inset-top, 0px) + 1rem));
+      padding-right: max(1.2rem, env(safe-area-inset-right, 0px));
+      padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+      padding-left: max(1.2rem, env(safe-area-inset-left, 0px));
+    }
     .credit-columns { column-count: 1; }
     .features-grid { column-count: 1; }
     .features-section::before { display: none; }
@@ -630,7 +640,7 @@
     .mm-monogram {
       flex-shrink: 0;
       width: 2.4rem; height: 2.4rem;
-      border: 1.5px solid var(--rule);
+      border: 3px solid var(--rule);
       display: flex; align-items: center; justify-content: center;
       font-family: 'UnifrakturMaguntia', cursive;
       font-size: 1.7rem; color: var(--ink-mid);
@@ -689,6 +699,7 @@
       z-index: 400;
       background: var(--parchment);
       border-top: 3px double var(--rule);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     .mm-tab {
       all: unset;
