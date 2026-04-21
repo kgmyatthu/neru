@@ -259,7 +259,58 @@
   .flourish { font-size: 1rem; color: var(--parchment-dark); opacity: 0.5; }
   .hero-edition { font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--parchment-dark); opacity: 0.8; }
   .hero-headline { font-size: 1.22rem; font-weight: 300; font-style: italic; color: var(--parchment-dark); max-width: 500px; margin: 0 auto; opacity: 0.75; }
-  .hero-buttons { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  /* ===== HERO CTAS — broadsheet byline of italic text links ===== */
+  .hero-byline {
+    margin-top: 1.7rem;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.9;
+    text-align: center;
+    color: var(--parchment);
+  }
+  .hero-link {
+    display: inline-block;
+    padding: 0.15rem 0.1rem 0.35rem;
+    font: inherit;
+    color: var(--parchment);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgba(224, 211, 180, 0.38);
+    text-underline-offset: 4px;
+    transition: color 0.25s ease, text-decoration-color 0.25s ease;
+  }
+  .hero-link:hover {
+    color: var(--parchment);
+    text-decoration-color: rgba(224, 211, 180, 0.9);
+  }
+  .hero-link-accent {
+    color: #b04040; /* warm rusted-ink red — brighter than the deep accent wax */
+    text-decoration-color: rgba(176, 64, 64, 0.55);
+  }
+  .hero-link-accent:hover {
+    color: #c95050;
+    text-decoration-color: rgba(201, 80, 80, 0.95);
+  }
+  .hero-link:focus-visible,
+  .hero-link-accent:focus-visible {
+    outline: 1.5px solid var(--parchment);
+    outline-offset: 3px;
+  }
+  .hero-byline-dot {
+    display: inline-block;
+    margin: 0 0.9rem;
+    font-size: 1.2em;
+    color: var(--ink-faded);
+    opacity: 0.4;
+    -webkit-user-select: none;
+    user-select: none;
+    vertical-align: baseline;
+  }
 
   /* ===== ARTICLE PAGE ===== */
   .article-wrap {
@@ -748,6 +799,20 @@
     /* The tab bar supersedes the dot-pagination and page-number on article pages */
     body:not(.on-hero) .page-nav-wrap { display: none; }
     body:not(.on-hero) .page-num { display: none; }
+
+    /* Hero byline — stack the links vertically, hide dot separators */
+    .hero-byline {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .hero-byline-dot { display: none; }
+    .hero-link {
+      padding: 0.5rem 0.8rem 0.6rem;
+    }
   }
 
   /* ===== Viewport scaling for ultrawide / 4K ===== */

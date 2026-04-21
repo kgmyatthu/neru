@@ -231,34 +231,37 @@ export function HeroPage({ data, onNavigate, isVisible = true }: HeroPageProps) 
         <p className="hero-headline">
           Built on NER's core — engage battles at Napoleonic-era corps scale.
         </p>
-        <div className="hero-buttons">
-          <a
-            href={data.trailerUrl}
-            className="btn"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ▶&ensp;Watch Trailer
-          </a>
+        <div className="hero-byline">
           <button
-            className="btn"
+            className="hero-link hero-link-accent"
             onClick={() => onNavigate?.('download')}
           >
-            ⬇&ensp;Download
+            Download
           </button>
-          <button
-            className="btn"
-            onClick={() => onNavigate?.('discussion')}
-          >
-            💬&ensp;Discussion
-          </button>
+          <span className="hero-byline-dot" aria-hidden="true">&middot;</span>
           <a
-            href="https://discord.gg/zvvFHtxx"
-            className="btn"
+            href={data.trailerUrl}
+            className="hero-link"
             target="_blank"
             rel="noopener noreferrer"
           >
-            🎮&ensp;Join Discord
+            Watch Trailer
+          </a>
+          <span className="hero-byline-dot" aria-hidden="true">&middot;</span>
+          <button
+            className="hero-link"
+            onClick={() => onNavigate?.('features')}
+          >
+            Features
+          </button>
+          <span className="hero-byline-dot" aria-hidden="true">&middot;</span>
+          <a
+            href="https://discord.gg/zvvFHtxx"
+            className="hero-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Join Discord
           </a>
         </div>
       </div>
