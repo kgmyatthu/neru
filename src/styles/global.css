@@ -600,7 +600,16 @@
   }
 
   @media (max-width: 768px) {
+    /* Anchor paper-page content to the visible viewport so the mobile browser URL bar
+       doesn't overlap the top of the masthead. .stage is position:fixed inset:0, which
+       on iOS fills the layout viewport (the full screen including under the URL bar);
+       sizing .article-wrap to 100dvh and anchoring it to the bottom of .page-front makes
+       it fill only the visible viewport, pushing the masthead safely below the URL bar. */
+    .page-paper .page-front {
+      align-items: flex-end;
+    }
     .article-wrap {
+      height: 100dvh;
       padding-top: max(1.3rem, calc(env(safe-area-inset-top, 0px) + 0.6rem));
       padding-right: max(1.1rem, env(safe-area-inset-right, 0px));
       padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
