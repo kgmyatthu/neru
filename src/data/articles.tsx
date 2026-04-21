@@ -73,7 +73,7 @@ export const articles: ArticleContent[] = [
       React.createElement('p', null,
         React.createElement('span', { className: 'drop-cap' }, 'T'),
         React.createElement('span', { className: 'first-word' }, 'he'),
-        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The campaign economy has been reworked from the ground up to sustain forces on that scale: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength rather than the token armies of the default game.'
+        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The engine itself cannot host forces of that magnitude on a single battlefield; in practice, battles are fought as one full stack per side, with an additional stack committing as reinforcement as the engagement develops — a scale that still far exceeds the token armies of the default game. The campaign economy has been reworked from the ground up to sustain this reality: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/60ui-battle.jpg',
