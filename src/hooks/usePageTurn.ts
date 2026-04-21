@@ -74,6 +74,11 @@ const FALLOFF_DELAY_MIN_MS = 90;
 const FALLOFF_DELAY_MAX_MS = 360;
 const FOCUS_HUNT_CYCLES_MIN = 1;
 const FOCUS_HUNT_CYCLES_MAX = 3;
+/** Per-turn animation duration multiplier range — draws a random scale within
+ *  [min, max] of the configured `animationDuration`, so no two page turns
+ *  advance at exactly the same speed. */
+const TURN_DURATION_MULT_MIN = 0.82;
+const TURN_DURATION_MULT_MAX = 1.22;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
@@ -394,13 +399,24 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     applyMicrofilmTransform(outgoingEl, 0, 0, direction);
     applyMicrofilmTransform(incomingEl, direction, 0, direction);
 
+    // Per-turn duration jitter — draws a clamped random multiplier around the
+    // configured `animationDuration` so consecutive turns never advance at the
+    // same pace. The motion-blur envelope, ease curve, and turn `t` all scale
+    // off this value together, so the whole choreography stays coherent.
+    const durationMult = Math.max(
+      TURN_DURATION_MULT_MIN,
+      Math.min(TURN_DURATION_MULT_MAX,
+        TURN_DURATION_MULT_MIN + Math.random() * (TURN_DURATION_MULT_MAX - TURN_DURATION_MULT_MIN)),
+    );
+    const thisTurnDuration = animationDuration * durationMult;
+
     let startTime: number | null = null;
     const offsetNodes = offsetNodesRef.current;
 
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp;
       const elapsed = timestamp - startTime;
-      const t = Math.min(elapsed / animationDuration, 1);
+      const t = Math.min(elapsed / thisTurnDuration, 1);
       const ease = easeInOut(t);
       // Velocity envelope — `sin(πt)` approximates the derivative of the cubic
       // ease-in-out: zero at endpoints, unity peak at t=0.5.
