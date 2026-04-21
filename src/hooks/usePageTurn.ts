@@ -60,6 +60,11 @@ const SHAKE_PEAK_PX = 0.7;
 /** Minimum ms between noise re-rolls — throttling frame-rate updates to ~12 Hz makes the
  *  flicker read as real film grain rather than digital strobe. */
 const POST_FX_NOISE_INTERVAL_MS = 85;
+/** Peak radial blur during focus-hunt (px). Small — meant to read as an autofocus
+ *  briefly pulling in and out, not as DOF. */
+const FOCUS_PEAK_BLUR_PX = 1.1;
+/** Number of focus hunt oscillations across POST_FX_DURATION_MS. */
+const FOCUS_HUNT_CYCLES = 2;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
@@ -253,11 +258,15 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       const elapsed = now - startTs;
       if (elapsed >= POST_FX_DURATION_MS) {
         if (vignette) vignette.style.opacity = '0';
-        if (stage) stage.style.transform = '';
+        if (stage) {
+          stage.style.transform = '';
+          stage.style.filter = '';
+        }
         postFxRafRef.current = null;
         return;
       }
-      const decay = 1 - elapsed / POST_FX_DURATION_MS; // 1 → 0
+      const tNorm = elapsed / POST_FX_DURATION_MS;
+      const decay = 1 - tNorm; // 1 → 0
 
       // Refresh noise sample on a fixed interval; otherwise interpolate.
       const sinceNoise = now - prevNoiseTs;
@@ -282,7 +291,14 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
       if (stage) {
         const amp = decay * SHAKE_PEAK_PX;
+        // Focus-hunt envelope: a damped sinusoid that swings in and out.
+        // (1-cos)/2 rises smoothly from 0 so the first "hunt" starts from sharp,
+        // decays with the same linear envelope as the other FX.
+        const osc = (1 - Math.cos(tNorm * FOCUS_HUNT_CYCLES * 2 * Math.PI)) * 0.5;
+        const focusBlur = osc * decay * FOCUS_PEAK_BLUR_PX;
+
         stage.style.transform = `translate(${(shakeX * amp).toFixed(2)}px, ${(shakeY * amp).toFixed(2)}px)`;
+        stage.style.filter = focusBlur > 0.08 ? `blur(${focusBlur.toFixed(2)}px)` : '';
       }
 
       postFxRafRef.current = requestAnimationFrame(tick);
