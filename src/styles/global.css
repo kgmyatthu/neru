@@ -609,3 +609,14 @@
     .features-section-body .art-inline-fig,
     .features-section-body .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
   }
+
+  /* ===== Viewport scaling for ultrawide / 4K ===== */
+  @media (min-width: 2400px) {
+    html, body { font-size: 1.35rem; }
+  }
+  @media (min-width: 3200px) {
+    html, body { font-size: 1.65rem; }
+  }
+  @media (min-width: 3800px) {
+    html, body { font-size: 1.9rem; }
+  }
