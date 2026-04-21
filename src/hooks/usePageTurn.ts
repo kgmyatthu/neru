@@ -39,16 +39,25 @@ const DEFAULTS = {
 
 /** Maximum horizontal streak length (px) — distance to the farthest ghost sample at peak velocity.
  *  Real motion blur is a trail of time-offset exposures, not a gaussian fade; we composite
- *  5 progressively faded copies of the page at fractional offsets to simulate this. */
+ *  N progressively faded copies of the page at fractional offsets to simulate this. */
 const MOTION_STREAK_MAX_PX = 80;
 /** Rolling-shutter skew angle (deg) — deliberately strong for a visible jello/wobble. */
 const ROLLING_SHUTTER_MAX_DEG = 8;
 /** Horizontal stretch at peak velocity. */
 const STRETCH_MAX = 0.035;
-/** Opacity slopes for each of the 5 ghost samples (farthest from source first is faintest). */
-const GHOST_SLOPES = [0.55, 0.35, 0.22, 0.13, 0.06] as const;
-/** Fractional offset multipliers for the 5 ghost samples (1.0 = MOTION_STREAK_MAX_PX). */
-const GHOST_FRACTIONS = [0.2, 0.4, 0.6, 0.8, 1.0] as const;
+/** Opacity slopes for each ghost sample (farthest from source is faintest).
+ *  Length determines trail density — more samples = smoother, less banding between offsets. */
+const GHOST_SLOPES = [0.48, 0.38, 0.3, 0.23, 0.17, 0.12, 0.07, 0.04] as const;
+/** Fractional offset multipliers for each ghost (1.0 = MOTION_STREAK_MAX_PX). */
+const GHOST_FRACTIONS = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0] as const;
+
+/** Duration of post-transition vignette flicker + camera shake (ms). */
+const POST_FX_DURATION_MS = 1500;
+/** Peak vignette overlay opacity during flicker. */
+const FLICKER_PEAK_OPACITY = 0.42;
+/** Peak shake amplitude in px (translate X/Y each up to ±this). */
+const SHAKE_PEAK_PX = 2.6;
+const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
 /** ID of the inline SVG filter used for directional motion blur. */
@@ -131,6 +140,28 @@ function ensureMotionBlurFilter(): SVGElement[] | null {
   return Array.from(svg.querySelectorAll('feOffset'));
 }
 
+/** Injects a fullscreen vignette overlay element (idempotent). */
+function ensureVignetteOverlay(): HTMLDivElement | null {
+  if (typeof document === 'undefined') return null;
+  let el = document.getElementById(VIGNETTE_ELEMENT_ID) as HTMLDivElement | null;
+  if (!el) {
+    el = document.createElement('div');
+    el.id = VIGNETTE_ELEMENT_ID;
+    el.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'pointer-events:none',
+      'z-index:900',
+      'opacity:0',
+      'background:radial-gradient(ellipse 85% 75% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.9) 100%)',
+      'mix-blend-mode:multiply',
+      'will-change:opacity',
+    ].join(';');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
 /**
  * Applies the microfilm transform to a single page. `velocity` ∈ [0,1] drives
  * the shared visual envelope (blur, skew, stretch); `direction` selects which
@@ -178,14 +209,61 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const animatingRef = useRef(false);
   const currentRef = useRef(initialPage);
   const offsetNodesRef = useRef<SVGElement[] | null>(null);
+  const vignetteRef = useRef<HTMLDivElement | null>(null);
+  const stageElRef = useRef<HTMLElement | null>(null);
+  const postFxRafRef = useRef<number | null>(null);
 
   useEffect(() => {
     currentRef.current = currentPage;
   }, [currentPage]);
 
-  // Inject SVG filter once on mount.
+  // Inject SVG filter + vignette overlay once on mount; locate the stage element.
   useEffect(() => {
     offsetNodesRef.current = ensureMotionBlurFilter();
+    vignetteRef.current = ensureVignetteOverlay();
+    stageElRef.current = document.querySelector('.stage');
+  }, []);
+
+  /**
+   * Post-transition flicker + camera shake. Both effects share the same decay
+   * envelope: their random amplitude starts at 1 and linearly rolls off to 0
+   * over POST_FX_DURATION_MS. Re-triggering during an in-flight FX cancels the
+   * previous RAF loop so consecutive page turns don't stack.
+   */
+  const runPostTransitionFX = useCallback(() => {
+    if (postFxRafRef.current !== null) cancelAnimationFrame(postFxRafRef.current);
+    const vignette = vignetteRef.current;
+    const stage = stageElRef.current;
+    const startTs = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTs;
+      if (elapsed >= POST_FX_DURATION_MS) {
+        if (vignette) vignette.style.opacity = '0';
+        if (stage) stage.style.transform = '';
+        postFxRafRef.current = null;
+        return;
+      }
+      const decay = 1 - elapsed / POST_FX_DURATION_MS; // 1 → 0
+
+      if (vignette) {
+        // Random-noise flicker, amplitude gated by decay. Slight base offset so
+        // the vignette never fully vanishes during the flicker window.
+        const noise = Math.random();
+        const op = (noise * 0.85 + 0.15) * decay * FLICKER_PEAK_OPACITY;
+        vignette.style.opacity = op.toFixed(3);
+      }
+
+      if (stage) {
+        const amp = decay * SHAKE_PEAK_PX;
+        const dx = (Math.random() - 0.5) * 2 * amp;
+        const dy = (Math.random() - 0.5) * 2 * amp;
+        stage.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+      }
+
+      postFxRafRef.current = requestAnimationFrame(tick);
+    };
+    postFxRafRef.current = requestAnimationFrame(tick);
   }, []);
 
   /** Film-strip layout: pages before current rest off-screen left, after off-screen right. */
@@ -275,11 +353,12 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         stackPages(newPage);
         animatingRef.current = false;
         setIsAnimating(false);
+        runPostTransitionFX();
       }
     };
 
     requestAnimationFrame(animate);
-  }, [totalPages, animationDuration, stackPages]);
+  }, [totalPages, animationDuration, stackPages, runPostTransitionFX]);
 
   const goToPage = useCallback((index: number) => {
     if (animatingRef.current || index === currentRef.current) return;
