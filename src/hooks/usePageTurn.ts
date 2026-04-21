@@ -1,18 +1,14 @@
 /**
  * @module usePageTurn
- * Custom hook that manages horizontal page-turning with 3D paper-warp animation.
+ * Custom hook that manages horizontal page transitions with a microfilm-advance
+ * animation: the outgoing page slides off in the direction of travel, the
+ * incoming page slides in behind it, and both carry a gaussian motion blur
+ * that peaks at mid-transition and vanishes at the endpoints — the iconic
+ * film-reader look from classic movies.
  *
- * Captures vertical scroll, touch swipe, and keyboard input to trigger
- * horizontal page turns with configurable animation duration and easing.
- *
- * @example
- * ```tsx
- * const { currentPage, isAnimating, turn, goToPage } = usePageTurn({
- *   totalPages: 8,
- *   animationDuration: 450,
- *   scrollThreshold: 40,
- * });
- * ```
+ * Input (wheel / touch swipe / keyboard / click) is still threshold-gated,
+ * not scroll-driven — once the user commits, the transition runs on its own
+ * timed animation.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -23,39 +19,57 @@ interface UsePageTurnConfig {
   totalPages: number;
   /** Initial page index to start on (0-based). */
   initialPage?: number;
-  /** Duration of the turn animation in milliseconds. */
+  /** Duration of the microfilm transition in milliseconds. */
   animationDuration?: number;
-  /** Scroll delta threshold to trigger a page turn. */
+  /** Wheel-delta threshold to commit a page advance. */
   scrollThreshold?: number;
   /** Touch swipe distance threshold in pixels. */
   swipeThreshold?: number;
 }
 
 interface UsePageTurnReturn {
-  /** Currently visible page index (0-based). */
   currentPage: number;
-  /** Whether a page turn animation is currently playing. */
   isAnimating: boolean;
-  /** Combined scroll progress toward next page turn (0 to 1). */
   scrollProgress: number;
-  /** Current scroll direction: 1 = forward, -1 = backward. */
   scrollDirection: TurnDirection;
-  /** Trigger a page turn in the given direction. */
   turn: (direction: TurnDirection) => void;
-  /** Jump directly to a page index (no animation). */
   goToPage: (index: number) => void;
-  /** Ref to attach to the page container for scroll capture. */
   containerRef: React.RefObject<HTMLDivElement | null>;
-  /** Refs array for individual page elements. */
   pageRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
 }
 
-/** Default animation configuration. */
 const DEFAULTS = {
-  animationDuration: 450,
-  scrollThreshold: 40,
+  animationDuration: 520,
+  scrollThreshold: 100,
   swipeThreshold: 30,
 } as const;
+
+/** Maximum gaussian blur applied at peak mid-transition velocity. */
+const MICROFILM_BLUR_MAX = 26;
+/** Horizontal stretch applied in sync with velocity for extra motion cue. */
+const MICROFILM_STRETCH_MAX = 0.06;
+/** Scroll distance at content's edge that must accumulate before a turn fires. */
+const BOUNDARY_THRESHOLD = 180;
+
+/** Cubic ease-in-out. */
+function easeInOut(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/**
+ * Applies the microfilm transform: translateX + a small outward scaleX stretch,
+ * and a gaussian blur proportional to instantaneous velocity.
+ */
+function applyMicrofilmTransform(
+  pageEl: HTMLElement,
+  offsetFraction: number,
+  velocity: number,
+) {
+  const blurPx = Math.abs(velocity) * MICROFILM_BLUR_MAX;
+  const stretch = 1 + Math.abs(velocity) * MICROFILM_STRETCH_MAX;
+  pageEl.style.transform = `translate3d(${offsetFraction * 100}%, 0, 0) scaleX(${stretch})`;
+  pageEl.style.filter = blurPx > 0.4 ? `blur(${blurPx}px)` : '';
+}
 
 export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const {
@@ -70,40 +84,43 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const [isAnimating, setIsAnimating] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<TurnDirection>(1);
+
   const scrollAccumRef = useRef(0);
   const boundaryAccumRef = useRef(0);
   const boundaryPassedRef = useRef(false);
   const touchStartRef = useRef(0);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
   const currentRef = useRef(initialPage);
 
-  /** Synchronise refs with state for use in animation frames. */
   useEffect(() => {
     currentRef.current = currentPage;
   }, [currentPage]);
 
   /**
-   * Applies the visual stack ordering to all pages.
-   * Pages before current are rotated away, current is on top, rest underneath.
+   * Lays out the pages as a film strip: pages before current rest off-screen
+   * left, pages after rest off-screen right, current is centered. Clears any
+   * leftover inline filter/transition so a new transition starts from clean state.
    */
   const stackPages = useCallback((targetPage: number) => {
     pageRefs.current.forEach((el, i) => {
       if (!el) return;
       el.classList.remove('active', 'turning');
       el.style.transition = '';
+      el.style.filter = '';
       if (i < targetPage) {
-        el.style.transform = 'rotateY(-180deg)';
+        el.style.transform = 'translate3d(-100%, 0, 0)';
         el.style.zIndex = String(i);
-        el.style.opacity = '0';
+        el.style.opacity = '1';
       } else if (i === targetPage) {
         el.classList.add('active');
-        el.style.transform = 'rotateY(0deg)';
+        el.style.transform = 'translate3d(0, 0, 0)';
         el.style.zIndex = String(totalPages + 1);
         el.style.opacity = '1';
       } else {
-        el.style.transform = 'rotateY(0deg)';
+        el.style.transform = 'translate3d(100%, 0, 0)';
         el.style.zIndex = String(totalPages - i);
         el.style.opacity = '1';
       }
@@ -111,8 +128,10 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   }, [totalPages]);
 
   /**
-   * Animates a page turn with 3D paper-warp effect.
-   * Uses requestAnimationFrame for smooth 60fps animation.
+   * Runs a microfilm advance: both outgoing and incoming pages animate their
+   * horizontal position together with a shared motion-blur envelope. Velocity
+   * (which drives blur and stretch) is derived from the ease curve's
+   * derivative, peaking at t=0.5.
    */
   const turn = useCallback((direction: TurnDirection) => {
     if (animatingRef.current) return;
@@ -120,48 +139,49 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     if (direction === 1 && current >= totalPages - 1) return;
     if (direction === -1 && current <= 0) return;
 
+    const outgoingEl = pageRefs.current[current];
+    const incomingEl = pageRefs.current[current + direction];
+    if (!outgoingEl || !incomingEl) return;
+
     animatingRef.current = true;
     setIsAnimating(true);
     setScrollProgress(0);
 
-    const pageEl = direction === 1
-      ? pageRefs.current[current]
-      : pageRefs.current[current - 1];
-
-    if (!pageEl) return;
-
-    pageEl.classList.add('turning');
-    pageEl.style.zIndex = String(totalPages + 10);
-    if (direction === -1) pageEl.style.opacity = '1';
+    // Set initial positions — incoming starts just off-screen in the travel direction.
+    outgoingEl.classList.add('turning');
+    incomingEl.classList.add('turning');
+    outgoingEl.style.zIndex = String(totalPages + 10);
+    incomingEl.style.zIndex = String(totalPages + 11);
+    outgoingEl.style.opacity = '1';
+    incomingEl.style.opacity = '1';
+    applyMicrofilmTransform(outgoingEl, 0, 0);
+    applyMicrofilmTransform(incomingEl, direction, 0);
 
     let startTime: number | null = null;
 
     const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
+      if (startTime === null) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const t = Math.min(elapsed / animationDuration, 1);
-      const ease = 1 - Math.pow(1 - t, 3); // fast ease-out
+      const ease = easeInOut(t);
+      // Velocity envelope: peaks at t=0.5, zero at endpoints. sin(πt) is
+      // a close approximation of the ease-in-out cubic's derivative and
+      // visually equivalent for blur strength.
+      const velocity = Math.sin(t * Math.PI);
 
-      const rotY = direction === 1 ? -180 * ease : -180 + 180 * ease;
-      const bend = Math.sin(ease * Math.PI) * 6;
-      const skew = Math.sin(ease * Math.PI) * (direction === 1 ? 2.5 : -2.5);
-      const scaleX = 1 - Math.sin(ease * Math.PI) * 0.035;
+      // Outgoing: 0 → -direction (slides off in the direction of travel)
+      // Incoming: +direction → 0 (slides in from the same side)
+      const outgoingOffset = -direction * ease;
+      const incomingOffset = direction * (1 - ease);
 
-      pageEl.style.transform =
-        `rotateY(${rotY}deg) rotateX(${bend * 0.3}deg) skewY(${skew}deg) scaleX(${scaleX})`;
-
-      // Fold highlight
-      const highlight = pageEl.querySelector('.page-curl-highlight') as HTMLElement | null;
-      if (highlight) {
-        const p = direction === 1 ? ease * 100 : (1 - ease) * 100;
-        highlight.style.background = `linear-gradient(90deg,transparent ${Math.max(0, p - 30)}%,rgba(255,255,255,0.04) ${p - 10}%,rgba(255,255,255,0.18) ${p}%,rgba(0,0,0,0.06) ${p + 5}%,transparent ${Math.min(100, p + 25)}%)`;
-        highlight.style.opacity = Math.sin(ease * Math.PI) > 0.1 ? '1' : '0';
-      }
+      applyMicrofilmTransform(outgoingEl, outgoingOffset, velocity);
+      applyMicrofilmTransform(incomingEl, incomingOffset, velocity);
 
       if (t < 1) {
         requestAnimationFrame(animate);
       } else {
-        pageEl.classList.remove('turning');
+        outgoingEl.classList.remove('turning');
+        incomingEl.classList.remove('turning');
         const newPage = current + direction;
         currentRef.current = newPage;
         setCurrentPage(newPage);
@@ -174,7 +194,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     requestAnimationFrame(animate);
   }, [totalPages, animationDuration, stackPages]);
 
-  /** Jump directly to a page without animation. */
+  /** Jump directly to a page index without animation. */
   const goToPage = useCallback((index: number) => {
     if (animatingRef.current || index === currentRef.current) return;
     const clamped = Math.max(0, Math.min(index, totalPages - 1));
@@ -184,12 +204,11 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     stackPages(clamped);
   }, [totalPages, stackPages]);
 
-  /** Initialise page stack on mount. */
   useEffect(() => {
     stackPages(initialPage);
   }, [stackPages]);
 
-  /** Wheel event handler — scrolls inner content first, then turns pages. */
+  /** Wheel — scroll inner content first, then accumulate boundary buffer, then fire turn. */
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -198,7 +217,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       const dir: TurnDirection = e.deltaY > 0 ? 1 : -1;
       setScrollDirection(dir);
 
-      // Check for scrollable inner content
       const activePage = pageRefs.current[currentRef.current];
       const scrollEl = activePage?.querySelector('.art-body') as HTMLElement | null;
       const hasScrollable = scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 5;
@@ -224,11 +242,10 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         }
       }
 
-      // Accumulate boundary buffer before allowing page turn (all pages)
       if (!boundaryPassedRef.current) {
         boundaryAccumRef.current += Math.abs(e.deltaY);
-        setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / 180) * 0.6));
-        if (boundaryAccumRef.current < 180) return;
+        setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / BOUNDARY_THRESHOLD) * 0.6));
+        if (boundaryAccumRef.current < BOUNDARY_THRESHOLD) return;
         boundaryPassedRef.current = true;
         scrollAccumRef.current = 0;
         return;
@@ -258,7 +275,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     return () => document.removeEventListener('wheel', handleWheel);
   }, [turn, scrollThreshold]);
 
-  /** Touch event handlers for mobile swipe — scrolls inner content first. */
+  /** Touch — scroll inner content first, accumulate swipe, commit on release. */
   useEffect(() => {
     let touchScrollEl: HTMLElement | null = null;
     let touchConsumed = false;
@@ -270,7 +287,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       touchBoundaryAccum = 0;
       setScrollProgress(0);
 
-      // Check if the active page has a scrollable .art-body
       const activePage = pageRefs.current[currentRef.current];
       const scrollEl = activePage?.querySelector('.art-body') as HTMLElement | null;
       if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 5) {
@@ -282,11 +298,10 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
     const handleTouchMove = (e: TouchEvent) => {
       const currentY = e.touches[0].clientY;
-      const delta = touchStartRef.current - currentY; // positive = finger moving up
+      const delta = touchStartRef.current - currentY;
       const dir: TurnDirection = delta > 0 ? 1 : -1;
       setScrollDirection(dir);
 
-      // No scrollable content — show progress toward page turn
       if (!touchScrollEl) {
         setScrollProgress(Math.min(1, Math.abs(delta) / (swipeThreshold * 3)));
         return;
@@ -297,7 +312,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         touchScrollEl.scrollTop + touchScrollEl.clientHeight >=
         touchScrollEl.scrollHeight - 1;
 
-      // If there's room to scroll in the swipe direction, scroll the content
       if ((delta > 0 && !atBottom) || (delta < 0 && !atTop)) {
         touchConsumed = true;
         touchBoundaryAccum = 0;
@@ -305,15 +319,14 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         touchStartRef.current = currentY;
         setScrollProgress(0);
       } else if (touchScrollEl) {
-        // At boundary — accumulate extra swipe distance before allowing page turn
         touchBoundaryAccum += Math.abs(delta);
-        if (touchBoundaryAccum < 180) {
+        if (touchBoundaryAccum < BOUNDARY_THRESHOLD) {
           touchStartRef.current = currentY;
           touchConsumed = true;
-          setScrollProgress(Math.min(0.6, (touchBoundaryAccum / 180) * 0.6));
+          setScrollProgress(Math.min(0.6, (touchBoundaryAccum / BOUNDARY_THRESHOLD) * 0.6));
         } else {
           touchConsumed = false;
-          setScrollProgress(0.6 + Math.min(0.4, ((touchBoundaryAccum - 180) / 100) * 0.4));
+          setScrollProgress(0.6 + Math.min(0.4, ((touchBoundaryAccum - BOUNDARY_THRESHOLD) / 100) * 0.4));
         }
       }
     };
@@ -321,8 +334,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     const handleTouchEnd = (e: TouchEvent) => {
       setScrollProgress(0);
       if (animatingRef.current) return;
-
-      // If the touch was consumed by scrolling content, don't turn
       if (touchConsumed) return;
 
       const delta = touchStartRef.current - e.changedTouches[0].clientY;
@@ -341,7 +352,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     };
   }, [turn, swipeThreshold]);
 
-  /** Keyboard arrow key handlers. */
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight') turn(1);
