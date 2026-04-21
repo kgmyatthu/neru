@@ -63,8 +63,17 @@ const POST_FX_NOISE_INTERVAL_MS = 85;
 /** Peak radial blur during focus-hunt (px). Small — meant to read as an autofocus
  *  briefly pulling in and out, not as DOF. */
 const FOCUS_PEAK_BLUR_PX = 1.1;
-/** Number of focus hunt oscillations across POST_FX_DURATION_MS. */
-const FOCUS_HUNT_CYCLES = 2;
+
+/** Per-turn randomization clamps. Each effect independently draws a peak
+ *  multiplier and a fall-off delay (the hold period at full intensity before
+ *  linear decay begins). The clamps keep values in a range that still feels
+ *  like the same animation, just with analog variation between turns. */
+const PEAK_MULT_MIN = 0.65;
+const PEAK_MULT_MAX = 1.2;
+const FALLOFF_DELAY_MIN_MS = 90;
+const FALLOFF_DELAY_MAX_MS = 360;
+const FOCUS_HUNT_CYCLES_MIN = 1;
+const FOCUS_HUNT_CYCLES_MAX = 3;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
@@ -243,9 +252,38 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     const vignette = vignetteRef.current;
     const stage = stageElRef.current;
     const startTs = performance.now();
+
+    // Per-turn randomization — each effect draws its own peak-multiplier and
+    // fall-off-delay (hold time at full intensity before linear decay starts).
+    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+    const rand = (lo: number, hi: number) => clamp(lo + Math.random() * (hi - lo), lo, hi);
+
+    const flickerPeakMult = rand(PEAK_MULT_MIN, PEAK_MULT_MAX);
+    const shakePeakMult = rand(PEAK_MULT_MIN, PEAK_MULT_MAX);
+    const focusPeakMult = rand(PEAK_MULT_MIN, PEAK_MULT_MAX);
+
+    const flickerDelayMs = rand(FALLOFF_DELAY_MIN_MS, FALLOFF_DELAY_MAX_MS);
+    const shakeDelayMs = rand(FALLOFF_DELAY_MIN_MS, FALLOFF_DELAY_MAX_MS);
+    const focusDelayMs = rand(FALLOFF_DELAY_MIN_MS, FALLOFF_DELAY_MAX_MS);
+
+    // Focus hunt picks a random integer cycle count — 1, 2, or 3 hunts — so
+    // the oscillation always ends on a sharp (zero-blur) phase.
+    const focusCycles = FOCUS_HUNT_CYCLES_MIN + Math.floor(
+      Math.random() * (FOCUS_HUNT_CYCLES_MAX - FOCUS_HUNT_CYCLES_MIN + 1),
+    );
+
+    // Returns a 0..1 decay factor given the elapsed time and an effect's delay.
+    // During the delay window the value is held at 1; afterwards it rolls off
+    // linearly through the remaining duration to 0.
+    const effectDecay = (elapsed: number, delay: number) => {
+      if (elapsed < delay) return 1;
+      const tail = POST_FX_DURATION_MS - delay;
+      if (tail <= 0) return 0;
+      return clamp(1 - (elapsed - delay) / tail, 0, 1);
+    };
+
     // Cached noise samples — refreshed at POST_FX_NOISE_INTERVAL_MS and lerped
-    // between samples each frame, so the effect feels like soft analog drift
-    // rather than per-frame digital jitter.
+    // between samples each frame for smooth analog drift.
     let prevNoiseTs = 0;
     let prevFlickerNoise = 0;
     let nextFlickerNoise = Math.random();
@@ -266,7 +304,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         return;
       }
       const tNorm = elapsed / POST_FX_DURATION_MS;
-      const decay = 1 - tNorm; // 1 → 0
 
       // Refresh noise sample on a fixed interval; otherwise interpolate.
       const sinceNoise = now - prevNoiseTs;
@@ -284,18 +321,22 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       const shakeX = prevShakeX + (nextShakeX - prevShakeX) * lerpT;
       const shakeY = prevShakeY + (nextShakeY - prevShakeY) * lerpT;
 
+      const flickerDecay = effectDecay(elapsed, flickerDelayMs);
+      const shakeDecay = effectDecay(elapsed, shakeDelayMs);
+      const focusDecay = effectDecay(elapsed, focusDelayMs);
+
       if (vignette) {
-        const op = (flickerNoise * 0.7 + 0.3) * decay * FLICKER_PEAK_OPACITY;
+        const op = (flickerNoise * 0.7 + 0.3) * flickerDecay * FLICKER_PEAK_OPACITY * flickerPeakMult;
         vignette.style.opacity = op.toFixed(3);
       }
 
       if (stage) {
-        const amp = decay * SHAKE_PEAK_PX;
-        // Focus-hunt envelope: a damped sinusoid that swings in and out.
-        // (1-cos)/2 rises smoothly from 0 so the first "hunt" starts from sharp,
-        // decays with the same linear envelope as the other FX.
-        const osc = (1 - Math.cos(tNorm * FOCUS_HUNT_CYCLES * 2 * Math.PI)) * 0.5;
-        const focusBlur = osc * decay * FOCUS_PEAK_BLUR_PX;
+        const amp = shakeDecay * SHAKE_PEAK_PX * shakePeakMult;
+        // Focus-hunt envelope: (1-cos)/2 rises smoothly from zero and returns
+        // to zero at each integer cycle. Per-turn `focusCycles` randomises
+        // whether the page gets 1, 2, or 3 hunts before settling.
+        const osc = (1 - Math.cos(tNorm * focusCycles * 2 * Math.PI)) * 0.5;
+        const focusBlur = osc * focusDecay * FOCUS_PEAK_BLUR_PX * focusPeakMult;
 
         stage.style.transform = `translate(${(shakeX * amp).toFixed(2)}px, ${(shakeY * amp).toFixed(2)}px)`;
         stage.style.filter = focusBlur > 0.08 ? `blur(${focusBlur.toFixed(2)}px)` : '';
