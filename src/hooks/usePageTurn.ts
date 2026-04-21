@@ -45,7 +45,7 @@ const DEFAULTS = {
 /** Scroll distance (accumulated abs(deltaY)) at content's edge before the page starts turning. */
 const BOUNDARY_THRESHOLD = 180;
 /** Scroll distance past the boundary that drives the page from 0% to 100% turn. */
-const TURN_COMMIT_DISTANCE = 550;
+const TURN_COMMIT_DISTANCE = 800;
 /** Smoothing time-constant in ms — visible progress catches up to target with this characteristic time. */
 const SMOOTHING_TAU_MS = 75;
 /** Convergence epsilon — below this, visible snaps to target and the RAF loop can exit. */
@@ -53,40 +53,54 @@ const CONVERGE_EPSILON = 0.0008;
 
 /**
  * Applies the 3D paper-curl transform for a given turn progress (0..1).
- * The combined rotY + rotX + asymmetric skewY/skewX + non-uniform scale gives
- * a C-curved sheet look that peaks at mid-rotation, rather than a rigid hinge.
- * The overlay gradient layered across the page provides the shadow/highlight
- * band that sells the bend visually.
+ *
+ * A flat CSS element can't truly bend, so we sell the curl through three
+ * layered tricks that all peak at mid-rotation (t=0.5):
+ *   1. Aggressive secondary transforms — rotateX lift, asymmetric skewY/skewX
+ *      S-bend, and non-uniform scale — distort the plane enough to read as
+ *      a curved sheet rather than a hinged plate.
+ *   2. A high-contrast shadow/highlight band painted across the crease via
+ *      `.page-curl-highlight`, with soft pre-crease shading and a deep
+ *      post-crease shadow that simulates the under-curve going away from us.
+ *   3. A drop-shadow filter that grows during the turn, giving the page real
+ *      depth as it lifts off its neighbours.
  */
 function applyTurnTransform(pageEl: HTMLElement, direction: TurnDirection, t: number) {
   // curl(t): 0 → 1 → 0, smooth bell centered at t=0.5 — drives every secondary deformation.
   const curl = Math.sin(t * Math.PI);
   const rotY = direction === 1 ? -180 * t : -180 + 180 * t;
-  const rotX = curl * 6.5;                                  // page lifts forward at the fold
-  const syDeg = curl * (direction === 1 ? 4.8 : -4.8);      // long-axis bend
-  const sxDeg = curl * (direction === 1 ? -2.6 : 2.6);      // opposing skew produces a soft S-curve
-  const scaleX = 1 - curl * 0.08;                           // narrows at mid-turn (parallax cue)
-  const scaleY = 1 - curl * 0.018;                          // slight vertical compression
+  const rotX = curl * 11;                                   // page lifts forward at the fold
+  const syDeg = curl * (direction === 1 ? 7.5 : -7.5);      // long-axis bend
+  const sxDeg = curl * (direction === 1 ? -4 : 4);          // opposing skew creates an S-curve
+  const scaleX = 1 - curl * 0.13;                           // narrows at mid-turn (parallax cue)
+  const scaleY = 1 - curl * 0.035;                          // slight vertical compression
 
   pageEl.style.transform =
     `rotateY(${rotY}deg) rotateX(${rotX}deg) skewY(${syDeg}deg) skewX(${sxDeg}deg) scaleX(${scaleX}) scaleY(${scaleY})`;
+
+  // Drop-shadow lifts the page visually off the stack at mid-turn.
+  pageEl.style.filter = curl > 0.03
+    ? `drop-shadow(0 ${curl * 18}px ${curl * 26}px rgba(0,0,0,${curl * 0.45}))`
+    : '';
 
   const highlight = pageEl.querySelector('.page-curl-highlight') as HTMLElement | null;
   if (highlight) {
     // p is the horizontal position (0..100) of the fold crease across the page.
     const p = direction === 1 ? t * 100 : (1 - t) * 100;
-    const shadow = curl * 0.48;   // shadow intensity — strongest at mid-turn
-    const sheen = curl * 0.22;    // specular highlight at the crease
-    // Layered gradient: soft leading shadow → bright crease → deeper trailing shadow → fade out.
+    const shadow = curl * 0.75;   // max shadow alpha at mid-turn
+    const sheen = curl * 0.35;    // specular highlight at the crease
+    // Layered gradient: soft leading shadow → pre-crease shadow → bright crease
+    // → deep post-crease shadow → gradual fade.
     highlight.style.background = `linear-gradient(90deg,
-      rgba(0,0,0,${shadow * 0.05}) 0%,
-      rgba(0,0,0,${shadow * 0.32}) ${Math.max(0, p - 38)}%,
-      rgba(0,0,0,${shadow * 0.55}) ${Math.max(0, p - 14)}%,
+      rgba(0,0,0,${shadow * 0.1}) 0%,
+      rgba(0,0,0,${shadow * 0.35}) ${Math.max(0, p - 45)}%,
+      rgba(0,0,0,${shadow * 0.6}) ${Math.max(0, p - 18)}%,
       rgba(255,244,220,${sheen}) ${p}%,
-      rgba(0,0,0,${shadow * 0.9}) ${Math.min(100, p + 4)}%,
-      rgba(0,0,0,${shadow * 0.5}) ${Math.min(100, p + 22)}%,
-      rgba(0,0,0,${shadow * 0.15}) 100%)`;
-    highlight.style.opacity = curl > 0.04 ? '1' : '0';
+      rgba(0,0,0,${shadow * 0.95}) ${Math.min(100, p + 4)}%,
+      rgba(0,0,0,${shadow * 0.65}) ${Math.min(100, p + 22)}%,
+      rgba(0,0,0,${shadow * 0.25}) ${Math.min(100, p + 45)}%,
+      rgba(0,0,0,${shadow * 0.08}) 100%)`;
+    highlight.style.opacity = curl > 0.03 ? '1' : '0';
   }
 }
 
@@ -135,6 +149,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       if (!el) return;
       el.classList.remove('active', 'turning');
       el.style.transition = '';
+      el.style.filter = '';
       if (i < targetPage) {
         el.style.transform = 'rotateY(-180deg)';
         el.style.zIndex = String(i);
