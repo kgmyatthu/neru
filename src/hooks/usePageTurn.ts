@@ -37,13 +37,18 @@ const DEFAULTS = {
   swipeThreshold: 30,
 } as const;
 
-/** Directional horizontal motion blur (via SVG `feGaussianBlur` stdDeviation X).
- *  Pure horizontal streak — no radial component — so it reads as motion, not DOF. */
-const MOTION_BLUR_MAX_PX = 20;
-/** Rolling-shutter skew angle (deg) — peaks at high velocity. */
-const ROLLING_SHUTTER_MAX_DEG = 3.2;
+/** Maximum horizontal streak length (px) — distance to the farthest ghost sample at peak velocity.
+ *  Real motion blur is a trail of time-offset exposures, not a gaussian fade; we composite
+ *  5 progressively faded copies of the page at fractional offsets to simulate this. */
+const MOTION_STREAK_MAX_PX = 80;
+/** Rolling-shutter skew angle (deg) — deliberately strong for a visible jello/wobble. */
+const ROLLING_SHUTTER_MAX_DEG = 8;
 /** Horizontal stretch at peak velocity. */
-const STRETCH_MAX = 0.03;
+const STRETCH_MAX = 0.035;
+/** Opacity slopes for each of the 5 ghost samples (farthest from source first is faintest). */
+const GHOST_SLOPES = [0.55, 0.35, 0.22, 0.13, 0.06] as const;
+/** Fractional offset multipliers for the 5 ghost samples (1.0 = MOTION_STREAK_MAX_PX). */
+const GHOST_FRACTIONS = [0.2, 0.4, 0.6, 0.8, 1.0] as const;
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
 /** ID of the inline SVG filter used for directional motion blur. */
@@ -56,8 +61,17 @@ function easeInOut(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-/** Injects the SVG filter defs (idempotent) and returns the feGaussianBlur node. */
-function ensureMotionBlurFilter(): SVGFEGaussianBlurElement | null {
+/**
+ * Injects the SVG motion-blur filter (idempotent) and returns refs to the five
+ * feOffset nodes so the animation loop can update their `dx` attribute per frame.
+ *
+ * The filter is a classic compositing motion-blur: five progressively faded,
+ * horizontally offset copies of the source are merged behind the source itself,
+ * producing a ghost trail exactly like the multi-sample accumulation that real
+ * cameras and film exposures produce. Pure horizontal — no gaussian bell — so
+ * vertical edges stay knife-sharp and the image cannot read as DOF.
+ */
+function ensureMotionBlurFilter(): SVGElement[] | null {
   if (typeof document === 'undefined') return null;
   let svg = document.getElementById(MOTION_BLUR_SVG_ID) as unknown as SVGSVGElement | null;
   if (!svg) {
@@ -73,21 +87,48 @@ function ensureMotionBlurFilter(): SVGFEGaussianBlurElement | null {
     const defs = document.createElementNS(ns, 'defs');
     const filter = document.createElementNS(ns, 'filter');
     filter.setAttribute('id', MOTION_BLUR_FILTER_ID);
-    // Pad the filter region horizontally so the streak doesn't get clipped at the page edge.
-    filter.setAttribute('x', '-20%');
+    // Oversized filter region so ghost trails don't clip at the page edges.
+    filter.setAttribute('x', '-40%');
     filter.setAttribute('y', '-5%');
-    filter.setAttribute('width', '140%');
+    filter.setAttribute('width', '180%');
     filter.setAttribute('height', '110%');
 
-    const blur = document.createElementNS(ns, 'feGaussianBlur');
-    blur.setAttribute('stdDeviation', '0 0');
-    filter.appendChild(blur);
+    // Build 5 offset + fade pairs.
+    const merge = document.createElementNS(ns, 'feMerge');
+    GHOST_SLOPES.forEach((slope, i) => {
+      const offset = document.createElementNS(ns, 'feOffset');
+      offset.setAttribute('in', 'SourceGraphic');
+      offset.setAttribute('dx', '0');
+      offset.setAttribute('dy', '0');
+      offset.setAttribute('result', `mb-off-${i}`);
+      filter.appendChild(offset);
 
+      const fade = document.createElementNS(ns, 'feComponentTransfer');
+      fade.setAttribute('in', `mb-off-${i}`);
+      fade.setAttribute('result', `mb-fade-${i}`);
+      const funcA = document.createElementNS(ns, 'feFuncA');
+      funcA.setAttribute('type', 'linear');
+      funcA.setAttribute('slope', String(slope));
+      fade.appendChild(funcA);
+      filter.appendChild(fade);
+    });
+
+    // Merge from farthest-faintest up to the sharp source on top.
+    for (let i = GHOST_SLOPES.length - 1; i >= 0; i--) {
+      const mergeNode = document.createElementNS(ns, 'feMergeNode');
+      mergeNode.setAttribute('in', `mb-fade-${i}`);
+      merge.appendChild(mergeNode);
+    }
+    const sourceNode = document.createElementNS(ns, 'feMergeNode');
+    sourceNode.setAttribute('in', 'SourceGraphic');
+    merge.appendChild(sourceNode);
+
+    filter.appendChild(merge);
     defs.appendChild(filter);
     svg.appendChild(defs);
     document.body.appendChild(svg);
   }
-  return svg.querySelector('feGaussianBlur');
+  return Array.from(svg.querySelectorAll('feOffset'));
 }
 
 /**
@@ -136,7 +177,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
   const currentRef = useRef(initialPage);
-  const blurNodeRef = useRef<SVGFEGaussianBlurElement | null>(null);
+  const offsetNodesRef = useRef<SVGElement[] | null>(null);
 
   useEffect(() => {
     currentRef.current = currentPage;
@@ -144,7 +185,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
   // Inject SVG filter once on mount.
   useEffect(() => {
-    blurNodeRef.current = ensureMotionBlurFilter();
+    offsetNodesRef.current = ensureMotionBlurFilter();
   }, []);
 
   /** Film-strip layout: pages before current rest off-screen left, after off-screen right. */
@@ -195,7 +236,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     applyMicrofilmTransform(incomingEl, direction, 0, direction);
 
     let startTime: number | null = null;
-    const blurNode = blurNodeRef.current;
+    const offsetNodes = offsetNodesRef.current;
 
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp;
@@ -206,10 +247,16 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       // ease-in-out: zero at endpoints, unity peak at t=0.5.
       const velocity = Math.sin(t * Math.PI);
 
-      // Drive the shared directional-blur filter for both pages at once.
-      if (blurNode) {
-        const mb = velocity * MOTION_BLUR_MAX_PX;
-        blurNode.setAttribute('stdDeviation', `${mb.toFixed(2)} 0`);
+      // Update the ghost-offset trail on the shared SVG filter.
+      if (offsetNodes) {
+        // Ghosts trail BEHIND motion: for forward turn (direction=1) pages move
+        // leftward, so ghosts sit to the right (+dx). For backward turn the
+        // sign flips.
+        const streak = velocity * MOTION_STREAK_MAX_PX * direction;
+        for (let i = 0; i < offsetNodes.length; i++) {
+          const dx = streak * GHOST_FRACTIONS[i];
+          offsetNodes[i].setAttribute('dx', dx.toFixed(2));
+        }
       }
 
       const outgoingOffset = -direction * ease;
