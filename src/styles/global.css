@@ -259,7 +259,90 @@
   .flourish { font-size: 1rem; color: var(--parchment-dark); opacity: 0.5; }
   .hero-edition { font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--parchment-dark); opacity: 0.8; }
   .hero-headline { font-size: 1.22rem; font-weight: 300; font-style: italic; color: var(--parchment-dark); max-width: 500px; margin: 0 auto; opacity: 0.75; }
-  .hero-buttons { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  /* ===== HERO CTAS — wax-seal primary + ghost secondaries ===== */
+  .hero-ctas {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Primary — stamped wax-seal cartouche */
+  .hero-cta-primary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 3rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--parchment);
+    background: var(--accent);
+    border: 1px solid rgba(28, 26, 20, 0.35);
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow:
+      0 3px 6px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 240, 210, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    transition: background 0.25s ease;
+  }
+  .hero-cta-primary::before,
+  .hero-cta-primary::after {
+    content: '\2726'; /* ✦ */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-55%);
+    font-size: 0.75rem;
+    color: var(--parchment);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .hero-cta-primary::before { left: 0.9rem; }
+  .hero-cta-primary::after { right: 0.9rem; }
+  .hero-cta-primary:hover { background: #8c2323; }
+
+  /* Ghost — engraved caption with faded-ink underline */
+  .hero-cta-ghost {
+    position: relative;
+    display: inline-block;
+    padding: 0.45rem 0.6rem 0.6rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--parchment-dark);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.25s ease;
+  }
+  .hero-cta-ghost::after {
+    content: '';
+    position: absolute;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: 0.25rem;
+    height: 1px;
+    background: var(--parchment-dark);
+    opacity: 0.32;
+    transition: opacity 0.25s ease;
+  }
+  .hero-cta-ghost:hover { color: var(--parchment); }
+  .hero-cta-ghost:hover::after { opacity: 0.75; }
+
+  .hero-cta-primary:focus-visible,
+  .hero-cta-ghost:focus-visible {
+    outline: 1.5px solid var(--parchment);
+    outline-offset: 3px;
+  }
 
   /* ===== ARTICLE PAGE ===== */
   .article-wrap {
@@ -748,6 +831,33 @@
     /* The tab bar supersedes the dot-pagination and page-number on article pages */
     body:not(.on-hero) .page-nav-wrap { display: none; }
     body:not(.on-hero) .page-num { display: none; }
+
+    /* Hero CTAs — stack vertically, cap width, keep primary's wax-seal treatment */
+    .hero-ctas {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 0.9rem;
+      width: 100%;
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-cta-primary {
+      width: 100%;
+      padding: 0.8rem 2.4rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.28em;
+    }
+    .hero-cta-ghost {
+      width: 100%;
+      padding: 0.55rem 0 0.65rem;
+      text-align: center;
+    }
+    .hero-cta-ghost::after {
+      left: 0;
+      right: 0;
+      bottom: 0.2rem;
+    }
   }
 
   /* ===== Viewport scaling for ultrawide / 4K ===== */

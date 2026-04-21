@@ -231,34 +231,34 @@ export function HeroPage({ data, onNavigate, isVisible = true }: HeroPageProps) 
         <p className="hero-headline">
           Built on NER's core — engage battles at Napoleonic-era corps scale.
         </p>
-        <div className="hero-buttons">
+        <div className="hero-ctas">
           <a
             href={data.trailerUrl}
-            className="btn"
+            className="hero-cta-ghost"
             target="_blank"
             rel="noopener noreferrer"
           >
-            ▶&ensp;Watch Trailer
+            Watch Trailer
           </a>
           <button
-            className="btn"
+            className="hero-cta-primary"
             onClick={() => onNavigate?.('download')}
           >
-            ⬇&ensp;Download
+            Download
           </button>
           <button
-            className="btn"
-            onClick={() => onNavigate?.('discussion')}
+            className="hero-cta-ghost"
+            onClick={() => onNavigate?.('features')}
           >
-            💬&ensp;Discussion
+            Features
           </button>
           <a
             href="https://discord.gg/zvvFHtxx"
-            className="btn"
+            className="hero-cta-ghost"
             target="_blank"
             rel="noopener noreferrer"
           >
-            🎮&ensp;Join Discord
+            Join Discord
           </a>
         </div>
       </div>
