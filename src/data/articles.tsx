@@ -57,55 +57,52 @@ export const articles: ArticleContent[] = [
     ),
   },
 
-  // ─── Article II: Vanilla Overhaul Assets ──────────────────
+  // ─── Article II: Campaign Rework & AI Formations ──────────
   {
     articleLabel: 'Article II',
-    headline: 'Vanilla Overhaul Assets',
-    subhead: 'Reskins, flags, SFX & VFX — reconciled with NER tables',
-    content: React.createElement('div', { className: 'art-text-cols' },
+    headline: 'Campaign Rework & AI Formations',
+    subhead: 'An economy sized for corps-strength warfare, with AI tuned for 55–60 unit armies',
+    content: React.createElement('div', { className: 'art-text-flow' },
+      React.createElement(InlineFigure, {
+        src: 'images/60ui-prebattle.jpg',
+        alt: '60-unit UI on the pre-battle screen showing both armies',
+        caption: 'Pre-battle — 60 unit cards for both forces.',
+        float: 'right',
+        width: '55%',
+      }),
       React.createElement('p', null,
-        React.createElement('span', { className: 'drop-cap' }, 'I'),
-        React.createElement('span', { className: 'first-word' }, 'ncludes'),
-        ' Vanilla Overhaul\'s visual and audio assets, manually reconciled with NER\'s unit tables. All assets remain the work of the Vanilla Overhaul team.'
+        React.createElement('span', { className: 'drop-cap' }, 'T'),
+        React.createElement('span', { className: 'first-word' }, 'he'),
+        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The campaign economy has been reworked from the ground up to sustain forces on that scale: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength rather than the token armies of the default game.'
       ),
+      React.createElement(InlineFigure, {
+        src: 'images/60ui-battle.jpg',
+        alt: '60-unit UI on the battle deployment screen',
+        caption: 'Battle — full 60-unit card panel.',
+        float: 'left',
+        width: '55%',
+      }),
       React.createElement('p', null,
-        React.createElement('strong', null, 'Unit Reskins'),
-        ' — detailed faction uniforms and unit models. ',
-        React.createElement('strong', null, 'Sound Effects'),
-        ' — deeper, more percussive musket and cannon audio. ',
-        React.createElement('strong', null, 'Visual Effects'),
-        ' — lingering powder smoke, natural muzzle flash and impact effects. ',
-        React.createElement('strong', null, 'Historical Flags'),
-        ' — accurate regimental and national colours for all factions.'
+        React.createElement('strong', null, 'AI Formations'),
+        ' — tuned for 55–60 unit armies. Improved unit distribution across the line, cavalry held on the flanks, and more frequent flanking attempts during engagement. A meaningful improvement over default behaviour rather than a complete overhaul.'
+      ),
+      React.createElement(InlineFigure, {
+        src: 'images/60ui-campaign.jpg',
+        alt: '60-unit UI on the campaign map',
+        caption: 'Campaign — 60 unit cards in the bottom panel.',
+        float: 'right',
+        width: '55%',
+      }),
+      React.createElement('p', null,
+        React.createElement('strong', null, '60-Unit UI'),
+        ' — custom-built through intensive reverse engineering of the game\'s interface. Campaign, battle, and pre-battle screens now display all sixty unit cards at studio quality. Entirely original work — not extracted from any existing mod — and essential to keeping a 60-unit army legible in practice.'
       ),
     ),
   },
 
-  // ─── Article III: Animations ──────────────────────────────
+  // ─── Article III: Unit Designations ───────────────────────
   {
     articleLabel: 'Article III',
-    headline: 'Animation Additions',
-    subhead: 'Standard bearer flag raise and cavalry sabre charge',
-    content: React.createElement(React.Fragment, null,
-      React.createElement('figure', { className: 'art-fig', style: { maxWidth: '480px', margin: '0 auto 1rem' } },
-        React.createElement('div', { className: 'art-fig-img' },
-          React.createElement('img', { src: 'images/flag-animation.gif', alt: 'Standard bearer raising flag while marching' }),
-        ),
-        React.createElement('figcaption', null, 'Standard bearer raising the flag during a march.'),
-      ),
-      React.createElement('div', { className: 'art-text-cols' },
-        React.createElement('p', null,
-          React.createElement('span', { className: 'drop-cap' }, 'T'),
-          React.createElement('span', { className: 'first-word' }, 'wo'),
-          ' animation additions: standard bearers raise their flag upright when marching, and cavalry troopers wave sabres during charges (ported from Vanilla Enhanced). Both integrated via manual table reconciliation with NER\'s database.'
-        ),
-      ),
-    ),
-  },
-
-  // ─── Article IV: Unit Designations ────────────────────────
-  {
-    articleLabel: 'Article IV',
     headline: 'Corrected Unit Designations',
     subhead: 'Battalion, squadron, and battery — proper Napoleonic terminology',
     content: React.createElement('div', { className: 'art-text-flow' },
@@ -134,7 +131,9 @@ export const articles: ArticleContent[] = [
       React.createElement('p', null,
         'Cavalry are labelled as ',
         React.createElement('strong', null, 'squadrons'),
-        ' — the basic manoeuvre element for all mounted troops.'
+        ' — the basic tactical unit of mounted troops in the 18th and early 19th centuries. A Napoleonic cavalry squadron (French: ',
+        React.createElement('em', null, 'escadron'),
+        ') typically comprised two companies and fielded between 100 and 200 sabres, depending on nation, establishment, and campaign wastage. Four squadrons generally formed a regiment in French service; British cavalry followed a similar pattern with two troops to a squadron. As the mounted counterpart of the infantry battalion, the squadron was the smallest body able to manoeuvre and deliver a coordinated charge under a single set of colours, with its own officers, standard, and trumpet calls.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/unit-artillery.png',
@@ -145,14 +144,14 @@ export const articles: ArticleContent[] = [
       React.createElement('p', null,
         'Artillery designated as a ',
         React.createElement('strong', null, 'battery'),
-        ' — a grouping of guns under a single commander.'
+        ' — the tactical grouping of guns commanded by a captain and served by its own gunners, drivers, and ammunition train. A standard Napoleonic foot battery fielded six to eight pieces — a mix of cannon and howitzers, the howitzers providing the high-angle, shell-throwing complement to the flat-trajectory guns. Horse artillery batteries followed the same establishment with lighter pieces and mounted crews, enabling them to keep pace with cavalry on manoeuvre and redeploy under fire.'
       ),
     ),
   },
 
-  // ─── Article V: Maximised Battle Maps ─────────────────────
+  // ─── Article IV: Maximised Battle Maps ────────────────────
   {
-    articleLabel: 'Article V',
+    articleLabel: 'Article IV',
     headline: 'Maximised Battle Maps',
     subhead: 'Engagement space extended to the engine\'s 3×3 km ceiling',
     content: React.createElement('div', { className: 'art-text-flow' },
@@ -171,46 +170,49 @@ export const articles: ArticleContent[] = [
     ),
   },
 
-  // ─── Article VI: Campaign Rework & AI Formations ──────────
+  // ─── Article V: Vanilla Overhaul Assets ───────────────────
+  {
+    articleLabel: 'Article V',
+    headline: 'Vanilla Overhaul Assets',
+    subhead: 'Reskins, flags, SFX & VFX — reconciled with NER tables',
+    content: React.createElement('div', { className: 'art-text-cols' },
+      React.createElement('p', null,
+        React.createElement('span', { className: 'drop-cap' }, 'I'),
+        React.createElement('span', { className: 'first-word' }, 'ncludes'),
+        ' Vanilla Overhaul\'s visual and audio assets, manually reconciled with NER\'s unit tables. All assets remain the work of the Vanilla Overhaul team.'
+      ),
+      React.createElement('p', null,
+        React.createElement('strong', null, 'Unit Reskins'),
+        ' — detailed faction uniforms and unit models. ',
+        React.createElement('strong', null, 'Sound Effects'),
+        ' — deeper, more percussive musket and cannon audio. ',
+        React.createElement('strong', null, 'Visual Effects'),
+        ' — lingering powder smoke, natural muzzle flash and impact effects. ',
+        React.createElement('strong', null, 'Historical Flags'),
+        ' — accurate regimental and national colours for all factions.'
+      ),
+    ),
+  },
+
+  // ─── Article VI: Animations ───────────────────────────────
   {
     articleLabel: 'Article VI',
-    headline: 'Campaign Rework & AI Formations',
-    subhead: 'An economy sized for corps-strength warfare, with AI tuned for 55–60 unit armies',
-    content: React.createElement('div', { className: 'art-text-flow' },
-      React.createElement('p', null,
-        React.createElement('span', { className: 'drop-cap' }, 'T'),
-        React.createElement('span', { className: 'first-word' }, 'he'),
-        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The campaign economy has been reworked from the ground up to sustain forces on that scale: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength rather than the token armies of the default game.'
+    headline: 'Animation Additions',
+    subhead: 'Standard bearer flag raise and cavalry sabre charge',
+    content: React.createElement(React.Fragment, null,
+      React.createElement('figure', { className: 'art-fig', style: { maxWidth: '480px', margin: '0 auto 1rem' } },
+        React.createElement('div', { className: 'art-fig-img' },
+          React.createElement('img', { src: 'images/flag-animation.gif', alt: 'Standard bearer raising flag while marching' }),
+        ),
+        React.createElement('figcaption', null, 'Standard bearer raising the flag during a march.'),
       ),
-      React.createElement(InlineFigure, {
-        src: 'images/60ui-prebattle.jpg',
-        alt: '60-unit UI on the pre-battle screen showing both armies',
-        caption: 'Pre-battle — 60 unit cards for both forces.',
-        float: 'right',
-        width: '55%',
-      }),
-      React.createElement('p', null,
-        React.createElement('strong', null, 'AI Formations'),
-        ' — tuned for 55–60 unit armies. Improved unit distribution across the line, cavalry held on the flanks, and more frequent flanking attempts during engagement. A meaningful improvement over default behaviour rather than a complete overhaul.'
+      React.createElement('div', { className: 'art-text-cols' },
+        React.createElement('p', null,
+          React.createElement('span', { className: 'drop-cap' }, 'T'),
+          React.createElement('span', { className: 'first-word' }, 'wo'),
+          ' animation additions: standard bearers raise their flag upright when marching, and cavalry troopers wave sabres during charges (ported from Vanilla Enhanced). Both integrated via manual table reconciliation with NER\'s database.'
+        ),
       ),
-      React.createElement(InlineFigure, {
-        src: 'images/60ui-battle.jpg',
-        alt: '60-unit UI on the battle deployment screen',
-        caption: 'Battle — full 60-unit card panel.',
-        float: 'left',
-        width: '55%',
-      }),
-      React.createElement('p', null,
-        React.createElement('strong', null, '60-Unit UI'),
-        ' — custom-built through intensive reverse engineering of the game\'s interface. Campaign, battle, and pre-battle screens now display all sixty unit cards at studio quality. Entirely original work — not extracted from any existing mod — and essential to keeping a 60-unit army legible in practice.'
-      ),
-      React.createElement(InlineFigure, {
-        src: 'images/60ui-campaign.jpg',
-        alt: '60-unit UI on the campaign map',
-        caption: 'Campaign — 60 unit cards in the bottom panel.',
-        float: 'right',
-        width: '55%',
-      }),
     ),
   },
 ];
