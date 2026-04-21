@@ -2,12 +2,12 @@
  * @module usePageTurn
  * Custom hook that manages horizontal page-turning with 3D paper-warp animation.
  *
- * Wheel input drives the page transform *directly* from scroll accumulation:
- * once the boundary buffer is exhausted, each wheel event advances the page's
- * rotation by a proportional amount. The page stays at whatever angle the user
- * has scrolled it to — there is no auto-snap. Forward scroll completes the
- * turn when progress reaches 1; reverse scroll cancels it when progress
- * returns to 0. Keyboard/click-driven turns still use the classic timed path.
+ * Wheel input sets a *target* turn progress (0..1); a requestAnimationFrame loop
+ * smoothly lerps the rendered progress toward that target each frame, so the
+ * visible rotation is fluid and granular regardless of how chunky the wheel's
+ * delta values are. The page holds its rotation between inputs — no auto-snap.
+ * Forward scroll brings target to 1 → commit; reverse scroll brings it to 0 →
+ * cancel. Keyboard/click turns still use the classic timed animation path.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -42,10 +42,14 @@ const DEFAULTS = {
   swipeThreshold: 30,
 } as const;
 
-/** Scroll distance (accumulated absolute deltaY) at content's edge before the page starts turning. */
+/** Scroll distance (accumulated abs(deltaY)) at content's edge before the page starts turning. */
 const BOUNDARY_THRESHOLD = 180;
-/** Scroll distance past the boundary to drive the page fully from 0% to 100% turn. */
+/** Scroll distance past the boundary that drives the page from 0% to 100% turn. */
 const TURN_COMMIT_DISTANCE = 320;
+/** Smoothing time-constant in ms — visible progress catches up to target with this characteristic time. */
+const SMOOTHING_TAU_MS = 75;
+/** Convergence epsilon — below this, visible snaps to target and the RAF loop can exit. */
+const CONVERGE_EPSILON = 0.0008;
 
 /** Applies the 3D paper-warp transform for a given turn progress (0..1). */
 function applyTurnTransform(pageEl: HTMLElement, direction: TurnDirection, t: number) {
@@ -81,10 +85,15 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   // Boundary + scroll-turn state
   const boundaryAccumRef = useRef(0);
   const boundaryPassedRef = useRef(false);
-  const scrollTurnProgressRef = useRef(0);
+  /** Target turn progress (0..1) set by wheel events. */
+  const targetProgressRef = useRef(0);
+  /** Rendered/visible turn progress (0..1) lerped each frame. */
+  const visibleProgressRef = useRef(0);
   const scrollTurnDirectionRef = useRef<TurnDirection>(1);
   const scrollTurnPageElRef = useRef<HTMLElement | null>(null);
   const scrollTurningRef = useRef(false);
+  /** Set true when user has reversed back to target=0 — triggers cancel after visible catches up. */
+  const cancelPendingRef = useRef(false);
 
   // Touch state
   const touchStartRef = useRef(0);
@@ -122,13 +131,15 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     });
   }, [totalPages]);
 
-  /** Abort any partial scroll-driven turn and restore the stack to the current page. */
+  /** Forget a partial scroll-turn and restore the stack to the current page. */
   const abortScrollTurn = useCallback(() => {
     const pageEl = scrollTurnPageElRef.current;
     if (pageEl) pageEl.classList.remove('turning');
     scrollTurnPageElRef.current = null;
     scrollTurningRef.current = false;
-    scrollTurnProgressRef.current = 0;
+    targetProgressRef.current = 0;
+    visibleProgressRef.current = 0;
+    cancelPendingRef.current = false;
     boundaryAccumRef.current = 0;
     boundaryPassedRef.current = false;
     stackPages(currentRef.current);
@@ -199,8 +210,11 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     stackPages(initialPage);
   }, [stackPages]);
 
-  /** Scroll-driven page turn: transform is updated in real time by wheel deltaY. */
+  /** Scroll-driven turn: wheel events move the target; RAF lerps visible toward target. */
   useEffect(() => {
+    let rafId: number | null = null;
+    let lastTickTs = 0;
+
     const beginScrollTurn = (direction: TurnDirection): boolean => {
       const current = currentRef.current;
       if (direction === 1 && current >= totalPages - 1) return false;
@@ -218,13 +232,14 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
       scrollTurnPageElRef.current = pageEl;
       scrollTurnDirectionRef.current = direction;
-      scrollTurnProgressRef.current = 0;
+      targetProgressRef.current = 0;
+      visibleProgressRef.current = 0;
+      cancelPendingRef.current = false;
       scrollTurningRef.current = true;
       applyTurnTransform(pageEl, direction, 0);
       return true;
     };
 
-    /** Finalize a committed turn — swap current page and reset. */
     const commitTurn = () => {
       const pageEl = scrollTurnPageElRef.current;
       const direction = scrollTurnDirectionRef.current;
@@ -237,23 +252,83 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       stackPages(newPage);
       scrollTurnPageElRef.current = null;
       scrollTurningRef.current = false;
-      scrollTurnProgressRef.current = 0;
+      targetProgressRef.current = 0;
+      visibleProgressRef.current = 0;
+      cancelPendingRef.current = false;
       boundaryAccumRef.current = 0;
       boundaryPassedRef.current = false;
       setScrollProgress(0);
     };
 
-    /** Abandon a partial turn on reverse-to-zero. */
     const cancelTurn = () => {
       const pageEl = scrollTurnPageElRef.current;
       if (pageEl) pageEl.classList.remove('turning');
       stackPages(currentRef.current);
       scrollTurnPageElRef.current = null;
       scrollTurningRef.current = false;
-      scrollTurnProgressRef.current = 0;
+      targetProgressRef.current = 0;
+      visibleProgressRef.current = 0;
+      cancelPendingRef.current = false;
       boundaryAccumRef.current = 0;
       boundaryPassedRef.current = false;
       setScrollProgress(0);
+    };
+
+    /** One frame of smoothing: lerp visible toward target; apply transform; settle or schedule next. */
+    const tick = (ts: number) => {
+      const dt = lastTickTs === 0 ? 16 : Math.min(50, ts - lastTickTs);
+      lastTickTs = ts;
+
+      const pageEl = scrollTurnPageElRef.current;
+      if (!pageEl) {
+        rafId = null;
+        lastTickTs = 0;
+        return;
+      }
+      const dir = scrollTurnDirectionRef.current;
+      const visible = visibleProgressRef.current;
+      const target = targetProgressRef.current;
+      const diff = target - visible;
+
+      if (Math.abs(diff) < CONVERGE_EPSILON) {
+        // Converged. Snap exactly and decide what to do next.
+        visibleProgressRef.current = target;
+        applyTurnTransform(pageEl, dir, target);
+        setScrollProgress(0.6 + target * 0.4);
+
+        if (target >= 1) {
+          commitTurn();
+          rafId = null;
+          lastTickTs = 0;
+          return;
+        }
+        if (target <= 0 && cancelPendingRef.current) {
+          cancelPendingRef.current = false;
+          cancelTurn();
+          rafId = null;
+          lastTickTs = 0;
+          return;
+        }
+        // Settled mid-turn — stop the RAF loop, wait for the next wheel event.
+        rafId = null;
+        lastTickTs = 0;
+        return;
+      }
+
+      // Frame-rate-independent exponential approach.
+      const alpha = 1 - Math.exp(-dt / SMOOTHING_TAU_MS);
+      const nextVisible = visible + diff * alpha;
+      visibleProgressRef.current = nextVisible;
+      applyTurnTransform(pageEl, dir, nextVisible);
+      setScrollProgress(0.6 + nextVisible * 0.4);
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const ensureTicking = () => {
+      if (rafId !== null) return;
+      lastTickTs = 0;
+      rafId = requestAnimationFrame(tick);
     };
 
     const handleWheel = (e: WheelEvent) => {
@@ -263,7 +338,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       const dir: TurnDirection = e.deltaY > 0 ? 1 : -1;
       setScrollDirection(dir);
 
-      // 1. Inner content scroll priority (only when not already turning)
+      // 1. Inner content scroll takes priority (only when not already turning)
       if (!scrollTurningRef.current) {
         const activePage = pageRefs.current[currentRef.current];
         const scrollEl = activePage?.querySelector('.art-body') as HTMLElement | null;
@@ -289,55 +364,48 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         }
       }
 
-      // 2. Boundary buffer — wait until the user has clearly pushed past the edge
+      // 2. Boundary buffer — require intent before starting the visual turn
       if (!boundaryPassedRef.current) {
         boundaryAccumRef.current += Math.abs(e.deltaY);
         setScrollProgress(Math.min(0.6, (boundaryAccumRef.current / BOUNDARY_THRESHOLD) * 0.6));
         if (boundaryAccumRef.current < BOUNDARY_THRESHOLD) return;
 
-        // Boundary crossed — begin scroll-driven turning and apply any excess
         const excess = boundaryAccumRef.current - BOUNDARY_THRESHOLD;
         boundaryPassedRef.current = true;
         if (!beginScrollTurn(dir)) {
-          // Can't turn (edge of book) — back out of the boundary state
           boundaryAccumRef.current = 0;
           boundaryPassedRef.current = false;
           setScrollProgress(0);
           return;
         }
-        const newProg = Math.max(0, Math.min(1, excess / TURN_COMMIT_DISTANCE));
-        scrollTurnProgressRef.current = newProg;
-        applyTurnTransform(scrollTurnPageElRef.current!, dir, newProg);
-        setScrollProgress(0.6 + newProg * 0.4);
-        if (newProg >= 1) commitTurn();
+        targetProgressRef.current = Math.min(1, excess / TURN_COMMIT_DISTANCE);
+        ensureTicking();
         return;
       }
 
-      // 3. Scroll-driven turning phase — every wheel event moves the page directly
+      // 3. Scroll-driven turning — wheel moves target, tick renders
       if (scrollTurningRef.current) {
-        const pageEl = scrollTurnPageElRef.current;
         const turnDir = scrollTurnDirectionRef.current;
-        if (!pageEl) return;
-
         const advance = (e.deltaY * turnDir) / TURN_COMMIT_DISTANCE;
-        const next = Math.max(0, Math.min(1, scrollTurnProgressRef.current + advance));
-        scrollTurnProgressRef.current = next;
+        const proposed = targetProgressRef.current + advance;
 
-        applyTurnTransform(pageEl, turnDir, next);
-        setScrollProgress(0.6 + next * 0.4);
-
-        if (next >= 1) {
-          commitTurn();
-          return;
+        if (proposed <= 0 && advance < 0) {
+          targetProgressRef.current = 0;
+          cancelPendingRef.current = true;
+        } else {
+          targetProgressRef.current = Math.max(0, Math.min(1, proposed));
+          // Only clear cancel-pending if user started moving forward again
+          if (advance > 0) cancelPendingRef.current = false;
         }
-        if (next <= 0 && advance < 0) {
-          cancelTurn();
-        }
+        ensureTicking();
       }
     };
 
     document.addEventListener('wheel', handleWheel, { passive: false });
-    return () => document.removeEventListener('wheel', handleWheel);
+    return () => {
+      document.removeEventListener('wheel', handleWheel);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, [totalPages, stackPages]);
 
   /** Touch swipe — classic swipe-commit path. */
