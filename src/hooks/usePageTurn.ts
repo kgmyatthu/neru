@@ -1,29 +1,22 @@
 /**
  * @module usePageTurn
- * Custom hook that manages horizontal page transitions with a microfilm-advance
- * animation: the outgoing page slides off in the direction of travel, the
- * incoming page slides in behind it, and both carry a gaussian motion blur
- * that peaks at mid-transition and vanishes at the endpoints — the iconic
- * film-reader look from classic movies.
- *
- * Input (wheel / touch swipe / keyboard / click) is still threshold-gated,
- * not scroll-driven — once the user commits, the transition runs on its own
- * timed animation.
+ * Microfilm transition: outgoing + incoming pages slide horizontally past each
+ * other, carrying a directional motion blur and a rolling-shutter skew that
+ * both peak at mid-transition. The directional blur is implemented via an
+ * inline SVG filter (`feGaussianBlur` with `stdDeviation="Nx 0"`) — a pure
+ * horizontal smear rather than the radial fog produced by CSS `filter: blur()`.
+ * The skew simulates the top/bottom row-scan offset of a rolling-shutter
+ * capture: vertical lines tilt in the direction of motion during fast advance.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { TurnDirection } from '@/types';
 
 interface UsePageTurnConfig {
-  /** Total number of pages in the newspaper. */
   totalPages: number;
-  /** Initial page index to start on (0-based). */
   initialPage?: number;
-  /** Duration of the microfilm transition in milliseconds. */
   animationDuration?: number;
-  /** Wheel-delta threshold to commit a page advance. */
   scrollThreshold?: number;
-  /** Touch swipe distance threshold in pixels. */
   swipeThreshold?: number;
 }
 
@@ -44,31 +37,83 @@ const DEFAULTS = {
   swipeThreshold: 30,
 } as const;
 
-/** Maximum gaussian blur applied at peak mid-transition velocity. */
-const MICROFILM_BLUR_MAX = 26;
-/** Horizontal stretch applied in sync with velocity for extra motion cue. */
-const MICROFILM_STRETCH_MAX = 0.06;
-/** Scroll distance at content's edge that must accumulate before a turn fires. */
+/** Soft radial blur (CSS `filter: blur`) — kept low so content stays readable. */
+const SOFT_BLUR_MAX_PX = 5;
+/** Directional horizontal motion blur (via SVG `feGaussianBlur` stdDeviation X). */
+const MOTION_BLUR_MAX_PX = 34;
+/** Rolling-shutter skew angle (deg) — peaks at high velocity. */
+const ROLLING_SHUTTER_MAX_DEG = 3.2;
+/** Horizontal stretch at peak velocity. */
+const STRETCH_MAX = 0.03;
+/** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
+/** ID of the inline SVG filter used for directional motion blur. */
+const MOTION_BLUR_FILTER_ID = 'microfilm-motion-blur';
+/** ID of the container SVG element. */
+const MOTION_BLUR_SVG_ID = '__microfilm-filter-defs';
 
 /** Cubic ease-in-out. */
 function easeInOut(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+/** Injects the SVG filter defs (idempotent) and returns the feGaussianBlur node. */
+function ensureMotionBlurFilter(): SVGFEGaussianBlurElement | null {
+  if (typeof document === 'undefined') return null;
+  let svg = document.getElementById(MOTION_BLUR_SVG_ID) as unknown as SVGSVGElement | null;
+  if (!svg) {
+    const ns = 'http://www.w3.org/2000/svg';
+    svg = document.createElementNS(ns, 'svg');
+    svg.id = MOTION_BLUR_SVG_ID;
+    svg.setAttribute('width', '0');
+    svg.setAttribute('height', '0');
+    svg.style.position = 'absolute';
+    svg.style.visibility = 'hidden';
+    svg.style.pointerEvents = 'none';
+
+    const defs = document.createElementNS(ns, 'defs');
+    const filter = document.createElementNS(ns, 'filter');
+    filter.setAttribute('id', MOTION_BLUR_FILTER_ID);
+    // Pad the filter region horizontally so the streak doesn't get clipped at the page edge.
+    filter.setAttribute('x', '-20%');
+    filter.setAttribute('y', '-5%');
+    filter.setAttribute('width', '140%');
+    filter.setAttribute('height', '110%');
+
+    const blur = document.createElementNS(ns, 'feGaussianBlur');
+    blur.setAttribute('stdDeviation', '0 0');
+    filter.appendChild(blur);
+
+    defs.appendChild(filter);
+    svg.appendChild(defs);
+    document.body.appendChild(svg);
+  }
+  return svg.querySelector('feGaussianBlur');
+}
+
 /**
- * Applies the microfilm transform: translateX + a small outward scaleX stretch,
- * and a gaussian blur proportional to instantaneous velocity.
+ * Applies the microfilm transform to a single page. `velocity` ∈ [0,1] drives
+ * the shared visual envelope (blur, skew, stretch); `direction` selects which
+ * way the rolling-shutter skew leans.
  */
 function applyMicrofilmTransform(
   pageEl: HTMLElement,
   offsetFraction: number,
   velocity: number,
+  direction: TurnDirection,
 ) {
-  const blurPx = Math.abs(velocity) * MICROFILM_BLUR_MAX;
-  const stretch = 1 + Math.abs(velocity) * MICROFILM_STRETCH_MAX;
-  pageEl.style.transform = `translate3d(${offsetFraction * 100}%, 0, 0) scaleX(${stretch})`;
-  pageEl.style.filter = blurPx > 0.4 ? `blur(${blurPx}px)` : '';
+  const softBlur = velocity * SOFT_BLUR_MAX_PX;
+  const shutterSkew = velocity * ROLLING_SHUTTER_MAX_DEG * -direction;
+  const stretch = 1 + velocity * STRETCH_MAX;
+
+  pageEl.style.transform =
+    `translate3d(${offsetFraction * 100}%, 0, 0) skewX(${shutterSkew}deg) scaleX(${stretch})`;
+
+  if (velocity > 0.015) {
+    pageEl.style.filter = `url(#${MOTION_BLUR_FILTER_ID}) blur(${softBlur}px)`;
+  } else {
+    pageEl.style.filter = '';
+  }
 }
 
 export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
@@ -94,16 +139,18 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animatingRef = useRef(false);
   const currentRef = useRef(initialPage);
+  const blurNodeRef = useRef<SVGFEGaussianBlurElement | null>(null);
 
   useEffect(() => {
     currentRef.current = currentPage;
   }, [currentPage]);
 
-  /**
-   * Lays out the pages as a film strip: pages before current rest off-screen
-   * left, pages after rest off-screen right, current is centered. Clears any
-   * leftover inline filter/transition so a new transition starts from clean state.
-   */
+  // Inject SVG filter once on mount.
+  useEffect(() => {
+    blurNodeRef.current = ensureMotionBlurFilter();
+  }, []);
+
+  /** Film-strip layout: pages before current rest off-screen left, after off-screen right. */
   const stackPages = useCallback((targetPage: number) => {
     pageRefs.current.forEach((el, i) => {
       if (!el) return;
@@ -127,12 +174,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     });
   }, [totalPages]);
 
-  /**
-   * Runs a microfilm advance: both outgoing and incoming pages animate their
-   * horizontal position together with a shared motion-blur envelope. Velocity
-   * (which drives blur and stretch) is derived from the ease curve's
-   * derivative, peaking at t=0.5.
-   */
   const turn = useCallback((direction: TurnDirection) => {
     if (animatingRef.current) return;
     const current = currentRef.current;
@@ -147,35 +188,37 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     setIsAnimating(true);
     setScrollProgress(0);
 
-    // Set initial positions — incoming starts just off-screen in the travel direction.
     outgoingEl.classList.add('turning');
     incomingEl.classList.add('turning');
     outgoingEl.style.zIndex = String(totalPages + 10);
     incomingEl.style.zIndex = String(totalPages + 11);
     outgoingEl.style.opacity = '1';
     incomingEl.style.opacity = '1';
-    applyMicrofilmTransform(outgoingEl, 0, 0);
-    applyMicrofilmTransform(incomingEl, direction, 0);
+    applyMicrofilmTransform(outgoingEl, 0, 0, direction);
+    applyMicrofilmTransform(incomingEl, direction, 0, direction);
 
     let startTime: number | null = null;
+    const blurNode = blurNodeRef.current;
 
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const t = Math.min(elapsed / animationDuration, 1);
       const ease = easeInOut(t);
-      // Velocity envelope: peaks at t=0.5, zero at endpoints. sin(πt) is
-      // a close approximation of the ease-in-out cubic's derivative and
-      // visually equivalent for blur strength.
+      // Velocity envelope — `sin(πt)` approximates the derivative of the cubic
+      // ease-in-out: zero at endpoints, unity peak at t=0.5.
       const velocity = Math.sin(t * Math.PI);
 
-      // Outgoing: 0 → -direction (slides off in the direction of travel)
-      // Incoming: +direction → 0 (slides in from the same side)
+      // Drive the shared directional-blur filter for both pages at once.
+      if (blurNode) {
+        const mb = velocity * MOTION_BLUR_MAX_PX;
+        blurNode.setAttribute('stdDeviation', `${mb.toFixed(2)} 0`);
+      }
+
       const outgoingOffset = -direction * ease;
       const incomingOffset = direction * (1 - ease);
-
-      applyMicrofilmTransform(outgoingEl, outgoingOffset, velocity);
-      applyMicrofilmTransform(incomingEl, incomingOffset, velocity);
+      applyMicrofilmTransform(outgoingEl, outgoingOffset, velocity, direction);
+      applyMicrofilmTransform(incomingEl, incomingOffset, velocity, direction);
 
       if (t < 1) {
         requestAnimationFrame(animate);
@@ -194,7 +237,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     requestAnimationFrame(animate);
   }, [totalPages, animationDuration, stackPages]);
 
-  /** Jump directly to a page index without animation. */
   const goToPage = useCallback((index: number) => {
     if (animatingRef.current || index === currentRef.current) return;
     const clamped = Math.max(0, Math.min(index, totalPages - 1));
@@ -208,7 +250,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     stackPages(initialPage);
   }, [stackPages]);
 
-  /** Wheel — scroll inner content first, then accumulate boundary buffer, then fire turn. */
+  /** Wheel — scroll inner content first, accumulate boundary, then commit via `turn`. */
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -275,7 +317,6 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     return () => document.removeEventListener('wheel', handleWheel);
   }, [turn, scrollThreshold]);
 
-  /** Touch — scroll inner content first, accumulate swipe, commit on release. */
   useEffect(() => {
     let touchScrollEl: HTMLElement | null = null;
     let touchConsumed = false;
