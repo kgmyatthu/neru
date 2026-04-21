@@ -92,12 +92,15 @@
     animation: grain-shift 0.8s steps(4) infinite;
   }
 
-  .page-paper .page-front::before {
+  /* Screen-level vignette — lives on the viewport, not on each page, so it
+     stays put when the microfilm advance translates a page sideways. */
+  body::after {
     content: '';
-    position: absolute; inset: 0;
-    z-index: 61;
+    position: fixed;
+    inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse 80% 70% at 50% 50%,
+    z-index: 200;
+    background: radial-gradient(ellipse 85% 75% at 50% 50%,
       transparent 40%, rgba(28,26,20,0.15) 60%, rgba(28,26,20,0.35) 80%, rgba(28,26,20,0.5) 100%);
   }
 
