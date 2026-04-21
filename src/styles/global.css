@@ -305,6 +305,10 @@
   .masthead-nav-link:hover { color: var(--ink-mid); }
   .masthead-nav-link.active { color: var(--accent); font-weight: 700; font-style: normal; }
 
+  /* ===== MOBILE MASTHEAD (hidden by default; activated in 768px block below) ===== */
+  .art-masthead-mobile { display: none; }
+  .mm-bottom-nav { display: none; }
+
   .art-thin-rule {
     width: 100%; height: 1px; background: var(--rule);
     margin-bottom: 1rem; flex-shrink: 0;
@@ -596,18 +600,134 @@
   }
 
   @media (max-width: 768px) {
-    .article-wrap { padding: 1.5rem 1.2rem 3.5rem; }
-    .art-body { padding-bottom: 2.5rem; }
+    .article-wrap { padding: 1.3rem 1.1rem 6rem; }
+    .art-body { padding-bottom: 1rem; }
     .art-text-cols { columns: 1; }
     .art-fig { margin: 0 0 0.5rem 0; }
     .art-inline-fig, .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
     .drop-cap { font-size: 3rem; }
-    .util-page { padding: 2rem 1.2rem 3.5rem; }
+    .util-page { padding: 2rem 1.2rem 6rem; }
     .credit-columns { column-count: 1; }
     .features-grid { column-count: 1; }
     .features-section::before { display: none; }
     .features-section-body .art-inline-fig,
     .features-section-body .art-inline-fig.right { float: none; width: 100%; margin: 0.5rem 0; }
+
+    /* Swap desktop masthead for the mobile layout */
+    .art-masthead,
+    .art-thin-rule { display: none; }
+
+    .art-masthead-mobile {
+      display: block;
+      flex-shrink: 0;
+    }
+    .mm-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding-bottom: 0.6rem;
+    }
+    .mm-monogram {
+      flex-shrink: 0;
+      width: 2.4rem; height: 2.4rem;
+      border: 1.5px solid var(--rule);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 1.7rem; color: var(--ink-mid);
+      line-height: 1;
+      cursor: pointer;
+      -webkit-user-select: none; user-select: none;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .mm-monogram:hover { color: var(--accent); border-color: var(--accent); }
+    .mm-title {
+      flex: 1; min-width: 0;
+      text-align: center;
+    }
+    .mm-title-name {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 1.05rem; color: var(--ink-mid);
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+    }
+    .mm-title-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.55rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent);
+      margin-top: 0.2rem;
+    }
+    .mm-date {
+      flex-shrink: 0;
+      text-align: right;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.62rem;
+      color: var(--ink-faded);
+      line-height: 1.3;
+      opacity: 0.85;
+    }
+    .mm-rule-thick {
+      height: 3px;
+      background: var(--rule);
+      margin-bottom: 0.15rem;
+    }
+    .mm-rule-thin {
+      height: 1px;
+      background: var(--rule);
+      margin-bottom: 1rem;
+    }
+
+    /* Fixed bottom tab bar */
+    .mm-bottom-nav {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 400;
+      background: var(--parchment);
+      border-top: 3px double var(--rule);
+    }
+    .mm-tab {
+      all: unset;
+      box-sizing: border-box;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.2rem;
+      padding: 0.55rem 0.3rem 0.7rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s ease;
+    }
+    .mm-tab + .mm-tab {
+      border-left: 1px solid rgba(58,54,40,0.2);
+    }
+    .mm-tab-num {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.65rem;
+      color: var(--ink-faded);
+      line-height: 1;
+    }
+    .mm-tab-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      line-height: 1;
+    }
+    .mm-tab.active { background: rgba(107,26,26,0.05); }
+    .mm-tab.active .mm-tab-num,
+    .mm-tab.active .mm-tab-label { color: var(--accent); }
+    .mm-tab.active .mm-tab-label { font-weight: 700; }
+
+    /* The tab bar supersedes the dot-pagination and page-number on article pages */
+    body:not(.on-hero) .page-nav-wrap { display: none; }
+    body:not(.on-hero) .page-num { display: none; }
   }
 
   /* ===== Viewport scaling for ultrawide / 4K ===== */

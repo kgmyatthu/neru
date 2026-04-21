@@ -1,15 +1,21 @@
 /**
  * @component NewspaperMasthead
- * Renders the newspaper-style masthead bar at the top of content pages.
- * Displays the mod name (clickable home link), an article label,
- * and right-aligned nav links for page navigation.
+ * Renders the newspaper-style masthead chrome for content pages.
+ *
+ * Desktop (>768px): a single horizontal bar with the mod name, page label,
+ * and inline nav links.
+ *
+ * Mobile (<=768px): a stacked header (monogram + title + date stamp) with
+ * dual rules, plus a fixed bottom tab-bar for page navigation. CSS handles
+ * the switch; both layouts render in the DOM and the irrelevant one is
+ * hidden via the 768px breakpoint.
  */
 
 const navLinks = [
-  { id: 'features', label: 'Features' },
-  { id: 'download', label: 'Download' },
-  { id: 'discussion', label: 'Discussion' },
-  { id: 'credits', label: 'Credits' },
+  { id: 'features', label: 'Features', numeral: 'I' },
+  { id: 'download', label: 'Download', numeral: 'II' },
+  { id: 'discussion', label: 'Discussion', numeral: 'III' },
+  { id: 'credits', label: 'Credits', numeral: 'IV' },
 ] as const;
 
 interface NewspaperMastheadProps {
@@ -21,6 +27,8 @@ interface NewspaperMastheadProps {
   onNavigate?: (pageId: string) => void;
   /** Mod name override. Defaults to "Napoleon Empire Realism Ultimate". */
   modName?: string;
+  /** Shorter name used by the mobile header so it stays on one line. */
+  modNameMobile?: string;
 }
 
 export function NewspaperMasthead({
@@ -28,9 +36,11 @@ export function NewspaperMasthead({
   activePage,
   onNavigate,
   modName = 'Napoleon Empire Realism Ultimate',
+  modNameMobile = 'Napoleon Empire R. Ultimate',
 }: NewspaperMastheadProps) {
   return (
     <>
+      {/* ===== Desktop masthead ===== */}
       <div className="art-masthead">
         <span
           className="name"
@@ -57,6 +67,47 @@ export function NewspaperMasthead({
         </nav>
       </div>
       <div className="art-thin-rule" />
+
+      {/* ===== Mobile masthead — top header ===== */}
+      <div className="art-masthead-mobile">
+        <div className="mm-row">
+          <span
+            className="mm-monogram"
+            role="button"
+            tabIndex={0}
+            aria-label="Home"
+            onClick={() => onNavigate?.('hero')}
+            onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.('hero'); }}
+          >
+            N
+          </span>
+          <div className="mm-title">
+            <div className="mm-title-name">{modNameMobile}</div>
+            {label && <div className="mm-title-label">{label}</div>}
+          </div>
+          <div className="mm-date">
+            <div>Vol. I</div>
+            <div>Apr. 2026</div>
+          </div>
+        </div>
+        <div className="mm-rule-thick" />
+        <div className="mm-rule-thin" />
+      </div>
+
+      {/* ===== Mobile masthead — fixed bottom nav ===== */}
+      <nav className="mm-bottom-nav" aria-label="Page navigation">
+        {navLinks.map((link) => (
+          <button
+            key={link.id}
+            className={`mm-tab${activePage === link.id ? ' active' : ''}`}
+            onClick={() => onNavigate?.(link.id)}
+            aria-current={activePage === link.id ? 'page' : undefined}
+          >
+            <span className="mm-tab-num">{link.numeral}</span>
+            <span className="mm-tab-label">{link.label}</span>
+          </button>
+        ))}
+      </nav>
     </>
   );
 }
