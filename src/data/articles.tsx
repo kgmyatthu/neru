@@ -75,6 +75,12 @@ export const articles: ArticleContent[] = [
         React.createElement('span', { className: 'first-word' }, 'he'),
         ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The engine itself cannot host forces of that magnitude on a single battlefield; in practice, battles are fought as one full stack per side, with an additional stack committing as reinforcement as the engagement develops — a scale that still far exceeds the token armies of the default game. The campaign economy has been reworked from the ground up to sustain this reality: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength.'
       ),
+      React.createElement('p', null,
+        'A 60-unit army may read as attritional on paper, but recruitment itself imposes the tempo of the war: raising a full stack from scratch takes on the order of fourteen turns, and fielding it alongside a faction\'s other wartime commitments is a real logistical problem. Catching a rival at full strength therefore rewards manoeuvre over grinding attrition — and because the economy cannot shrug off heavy losses, two or three decisive engagements are typically enough to knock a major power out of the war entirely. It is not unusual for a single catastrophic field defeat to bring the enemy to the peace table on the following turn.'
+      ),
+      React.createElement('p', null,
+        'NER\'s morale system rewards that same decisive impulse. A routed battalion is not a destroyed one; unless actively pursued and cut down — classically the work of cavalry — a broken army retains considerable fighting power, reorganises, and returns to the line in subsequent battles. Sitting idle while a defeated force withdraws squanders the victory outright. This rewards an operational style recognisably Napoleon\'s own: contemporary accounts repeatedly describe his preference for the decisive battle followed by vigorous pursuit, and a player campaigning without sufficient cavalry will feel the corresponding absence.'
+      ),
       React.createElement(InlineFigure, {
         src: 'images/60ui-battle.jpg',
         alt: '60-unit UI on the battle deployment screen',
