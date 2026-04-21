@@ -70,7 +70,7 @@ export const articles: ArticleContent[] = [
       ),
       React.createElement('p', null,
         React.createElement('strong', null, 'Unit Reskins'),
-        ' — period-accurate faction uniforms and models. ',
+        ' — detailed faction uniforms and unit models. ',
         React.createElement('strong', null, 'Sound Effects'),
         ' — deeper, more percussive musket and cannon audio. ',
         React.createElement('strong', null, 'Visual Effects'),
@@ -150,16 +150,16 @@ export const articles: ArticleContent[] = [
     ),
   },
 
-  // ─── Article V: Battle Maps & AI ──────────────────────────
+  // ─── Article V: Maximised Battle Maps ─────────────────────
   {
     articleLabel: 'Article V',
-    headline: 'Maximised Battle Maps & AI Formations',
-    subhead: 'Larger maps, new AI decision-making for 55–60 unit armies',
+    headline: 'Maximised Battle Maps',
+    subhead: 'Engagement space extended to the engine\'s 3×3 km ceiling',
     content: React.createElement('div', { className: 'art-text-flow' },
       React.createElement('p', null,
         React.createElement('span', { className: 'drop-cap' }, 'B'),
         React.createElement('span', { className: 'first-word' }, 'attle'),
-        ' maps pushed to the engine\'s 3×3 km limit using Sirlion\'s Battleterrain templates. Default maps are far too cramped for 55–60 unit armies — maximised maps give formations room to deploy properly.'
+        ' maps have been extended to the engine\'s maximum 3×3 km footprint using Sirlion\'s Battleterrain templates. Default terrain is far too constrained for the 55–60 unit armies this mod is built around; maximised maps give formations the lateral frontage and reserve depth required to deploy, manoeuvre, and commit reserves in the period manner.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/battlemap.jpg',
@@ -168,9 +168,19 @@ export const articles: ArticleContent[] = [
         float: 'left',
         width: '68%',
       }),
+    ),
+  },
+
+  // ─── Article VI: Campaign Rework & AI Formations ──────────
+  {
+    articleLabel: 'Article VI',
+    headline: 'Campaign Rework & AI Formations',
+    subhead: 'An economy sized for corps-strength warfare, with AI tuned for 55–60 unit armies',
+    content: React.createElement('div', { className: 'art-text-flow' },
       React.createElement('p', null,
-        React.createElement('strong', null, 'AI Formations'),
-        ' — adjusted for 55–60 unit armies. Better unit distribution, cavalry on flanks, more flanking attempts. An improvement over default, not a complete fix.'
+        React.createElement('span', { className: 'drop-cap' }, 'T'),
+        React.createElement('span', { className: 'first-word' }, 'he'),
+        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The campaign economy has been reworked from the ground up to sustain forces on that scale: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength rather than the token armies of the default game.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/60ui-prebattle.jpg',
@@ -180,8 +190,8 @@ export const articles: ArticleContent[] = [
         width: '55%',
       }),
       React.createElement('p', null,
-        React.createElement('strong', null, '60-Unit UI'),
-        ' — custom-built via intensive reverse engineering. Campaign, battle, and pre-battle screens display all 60 unit cards at studio quality. Entirely new work, not extracted from any existing mod.'
+        React.createElement('strong', null, 'AI Formations'),
+        ' — tuned for 55–60 unit armies. Improved unit distribution across the line, cavalry held on the flanks, and more frequent flanking attempts during engagement. A meaningful improvement over default behaviour rather than a complete overhaul.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/60ui-battle.jpg',
@@ -190,6 +200,10 @@ export const articles: ArticleContent[] = [
         float: 'left',
         width: '55%',
       }),
+      React.createElement('p', null,
+        React.createElement('strong', null, '60-Unit UI'),
+        ' — custom-built through intensive reverse engineering of the game\'s interface. Campaign, battle, and pre-battle screens now display all sixty unit cards at studio quality. Entirely original work — not extracted from any existing mod — and essential to keeping a 60-unit army legible in practice.'
+      ),
       React.createElement(InlineFigure, {
         src: 'images/60ui-campaign.jpg',
         alt: '60-unit UI on the campaign map',
