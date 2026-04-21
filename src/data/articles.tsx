@@ -42,7 +42,7 @@ export const articles: ArticleContent[] = [
       ),
       React.createElement('p', null,
         React.createElement('strong', null, 'Cavalry'),
-        ' — at ~407 men, infantry retains square formation — the highest possible before the engine disables it. Cavalry must respect prepared squares; charges are most effective on flanks, against routers, or when catching battalions mid-manoeuvre.'
+        ' — cavalry now reflects period doctrine. Heavy cavalry (cuirassiers, carabiniers) wielded the straight-bladed pallasch — a thrusting weapon built for the shock of the charge and poorly suited to parry or prolonged mêlée. Light cavalry (hussars, chasseurs) carry the curved sabre, a true cut-and-guard weapon that excels in sustained combat. Melee values, charge bonuses, and movement speed have been reworked accordingly: heavy squadrons deliver a devastating initial impact but falter once pinned, while light squadrons engage more effectively beyond the initial shock — trading mass for manoeuvre.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/rank-spacing.jpg',
@@ -123,7 +123,7 @@ export const articles: ArticleContent[] = [
       React.createElement('p', null,
         'Infantry are designated as ',
         React.createElement('strong', null, 'battalions'),
-        ' — the tactical unit that manoeuvred and fought as a single body.'
+        ' — the tactical unit that manoeuvred and fought as a single body. Establishment strength for a Napoleonic battalion typically ran from 800 to 1,000 men, though attrition from disease, desertion, and detached duty routinely reduced an active-campaign battalion to roughly 500 effectives — closer to the figure actually fielded on any given day.'
       ),
       React.createElement(InlineFigure, {
         src: 'images/unit-cavalry.png',
