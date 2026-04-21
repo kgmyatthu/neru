@@ -640,7 +640,7 @@
     .mm-monogram {
       flex-shrink: 0;
       width: 2.4rem; height: 2.4rem;
-      border: 1.5px solid var(--rule);
+      border: 3px solid var(--rule);
       display: flex; align-items: center; justify-content: center;
       font-family: 'UnifrakturMaguntia', cursive;
       font-size: 1.7rem; color: var(--ink-mid);
