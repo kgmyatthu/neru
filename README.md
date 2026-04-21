@@ -9,50 +9,66 @@ npm install
 npm run dev
 ```
 
+## Page Model
+
+The site is a 5-page newspaper. Each page is assembled in [src/data/pages.ts](src/data/pages.ts):
+
+| # | Page | Source |
+| - | ---- | ------ |
+| I | Hero (video backdrop, trailer, download CTA) | `pages.ts` |
+| II | Features (all articles combined into one broadsheet) | [src/data/articles.tsx](src/data/articles.tsx) |
+| III | Download & Installation | [src/data/install.tsx](src/data/install.tsx) |
+| IV | Discussion (Giscus / GitHub Discussions) | `pages.ts` |
+| V | Credits | [src/data/credits.ts](src/data/credits.ts) |
+
 ## Project Structure
 
 ```
 src/
+├── App.tsx                       # Root component — orchestrates everything
+├── main.tsx                      # Entry point
 ├── types/
-│   └── index.ts              # All TypeScript interfaces and type definitions
+│   └── index.ts                  # All TypeScript interfaces
 ├── data/
-│   ├── articles.tsx           # ⭐ Article content — ADD NEW ARTICLES HERE
-│   ├── credits.ts             # Credit entries — add contributors here
-│   ├── install.tsx            # Installation steps data
-│   └── pages.ts               # Page assembler (auto-builds from above)
+│   ├── articles.tsx              # ⭐ Article sections — ADD NEW ARTICLES HERE
+│   ├── credits.ts                # Credit entries
+│   ├── install.tsx               # Installation steps
+│   └── pages.ts                  # Page assembler (hero, features, download, etc.)
 ├── hooks/
-│   └── usePageTurn.ts         # Page-turn logic (scroll, touch, keyboard, animation)
+│   └── usePageTurn.ts            # Page-turn logic (scroll, touch, keyboard, animation)
 ├── components/
-│   ├── App.tsx                # Root component — orchestrates everything
-│   ├── PageShell.tsx          # 3D page wrapper (front/back faces, curl highlight)
-│   ├── HeroPage.tsx           # Landing page with YouTube video backdrop
-│   ├── ArticlePage.tsx        # Reusable article page with masthead + headline
-│   ├── DownloadPage.tsx       # Installation instructions + download button
-│   ├── CreditsPage.tsx        # Acknowledgements with linked contributor names
-│   ├── NewspaperMasthead.tsx   # Blackletter header bar for content pages
-│   ├── InlineFigure.tsx       # Floatable image for embedding in article text
-│   ├── PageNav.tsx            # Dot indicators at viewport bottom
-│   ├── PageArrows.tsx         # Left/right turn buttons
-│   └── AudioToggle.tsx        # Mute/unmute button for hero video
-├── styles/
-│   └── global.css             # All styles (18th-century broadsheet theme)
-├── main.tsx                   # Entry point
-└── vite-env.d.ts              # Vite type reference
+│   ├── PageShell.tsx             # 3D page wrapper (front/back faces, curl highlight)
+│   ├── HeroPage.tsx              # Landing page with YouTube / self-hosted video backdrop
+│   ├── FeaturesPage.tsx          # Multi-column broadsheet rendering all articles
+│   ├── ArticlePage.tsx           # Reusable article page with masthead + headline
+│   ├── DownloadPage.tsx          # Installation instructions + download button
+│   ├── DiscussionPage.tsx        # Giscus-powered comments page
+│   ├── CreditsPage.tsx           # Acknowledgements with linked contributor names
+│   ├── NewspaperMasthead.tsx     # Masthead chrome — horizontal bar on desktop,
+│   │                             #   stacked header + fixed bottom tab bar on mobile (<=768px)
+│   ├── InlineFigure.tsx          # Floatable image for embedding in article text
+│   ├── PageNav.tsx               # Dot indicators at viewport bottom
+│   ├── PageArrows.tsx            # Left/right turn buttons
+│   └── AudioToggle.tsx           # Mute/unmute button for hero video
+└── styles/
+    └── global.css                # All styles (18th-century broadsheet theme)
 ```
 
 ## Adding a New Article
 
+Articles are rendered as sections within the single **Features** page — they are not separate pages.
+
 1. Place any images in `public/images/`.
 
-2. Open `src/data/articles.tsx` and add a new entry to the `articles` array:
+2. Open [src/data/articles.tsx](src/data/articles.tsx) and add a new entry to the `articles` array:
 
 ```tsx
 {
-  articleLabel: 'Article VI',
+  articleLabel: 'Article V',
   headline: 'Your Headline',
   subhead: 'Your subhead text',
   content: (
-    <div className="art-text-cols">
+    <div className="art-text-flow">
       <p>
         <span className="drop-cap">F</span>
         <span className="first-word">irst</span>
@@ -64,7 +80,7 @@ src/
 }
 ```
 
-3. The article automatically appears as a new page. Page numbers auto-increment.
+3. The section automatically appears in the Features broadsheet.
 
 ### Article Layout Patterns
 
@@ -107,7 +123,7 @@ src/
 
 ## Adding Credits
 
-Open `src/data/credits.ts` and add an entry:
+Open [src/data/credits.ts](src/data/credits.ts) and add an entry:
 
 ```ts
 {
@@ -119,10 +135,23 @@ Open `src/data/credits.ts` and add an entry:
 
 ## Configuration
 
-- **YouTube Video ID**: Set in `src/data/pages.ts` → `youtubeVideoId`
-- **Google Drive Link**: Set in `src/data/pages.ts` → `downloadUrl`
-- **Google Analytics ID**: Replace `GA_MEASUREMENT_ID` in `index.html`
-- **OG Image URL**: Update `og:image` in `index.html` with absolute URL after deploy
+All site-wide configuration lives in [src/data/pages.ts](src/data/pages.ts):
+
+- **YouTube video ID** (hero backdrop & trailer) — `youtubeVideoId` / `trailerUrl`
+- **Self-hosted backdrop video** — `backdropVideo` (MP4 in `public/videos/`)
+- **Download URL** — `downloadUrl` (currently points to Nexus Mods)
+- **Giscus setup** (discussion page) — `repo`, `repoId`, `category`, `categoryId`
+  - Generate values via [giscus.app](https://giscus.app/)
+
+Other config:
+- **Google Analytics ID** — replace `GA_MEASUREMENT_ID` in [index.html](index.html)
+- **OG Image URL** — update `og:image` in `index.html` with the absolute URL after deploy
+
+## Responsive Behavior
+
+- **Desktop (>768px)** — classic horizontal masthead, inline nav links.
+- **Mobile (≤768px)** — stacked header (monogram + title + date stamp) with a fixed bottom tab bar for page navigation. The dot pagination is hidden on article pages (the tab bar replaces it).
+- **Ultrawide / 4K** — root font-size scales up at 2400px / 3200px / 3800px breakpoints so the rem-based type scale grows proportionally.
 
 ## Deploy
 
@@ -130,16 +159,14 @@ Open `src/data/credits.ts` and add an entry:
 npm run build
 ```
 
-Output is in `dist/`. Deploy to any static host (GitHub Pages, Netlify, Vercel, etc.).
+Output lands in `dist/`. The build also copies `index.html` → `404.html` so SPA routing works on GitHub Pages. Deploy to any static host (GitHub Pages, Netlify, Vercel, etc.).
 
 ## Image Files
 
-Place these in `public/images/`:
-- `hero-fallback.jpg` — Hero backdrop fallback
-- `artillery.png` — Article I screenshot
-- `rank-spacing.jpg` — Article I screenshot
-- `unit-infantry.png` — Article IV screenshot
-- `unit-cavalry.png` — Article IV screenshot
-- `unit-artillery.png` — Article IV screenshot
-- `flag-animation.gif` — Article III animation
-- `battlemap.jpg` — Article V screenshot
+Current assets in `public/images/`:
+- `hero-fallback.jpg` — hero backdrop fallback
+- `artillery.png`, `rank-spacing.jpg` — large-scale unit article
+- `unit-infantry.png`, `unit-cavalry.png`, `unit-artillery.png` — unit rebalance article
+- `flag-animation.gif` — flag animation article
+- `battlemap.jpg` — battle map article
+- `60ui-battle.jpg`, `60ui-campaign.jpg`, `60ui-prebattle.jpg` — 60-unit UI article
