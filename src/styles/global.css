@@ -672,11 +672,12 @@
     .mm-rule-thick {
       height: 3px;
       background: var(--rule);
-      margin-bottom: 1rem;
+      margin-bottom: 0.15rem;
     }
     .mm-rule-thin {
       height: 1px;
       background: var(--rule);
+      margin-bottom: 1rem;
     }
 
     /* Fixed bottom tab bar */
