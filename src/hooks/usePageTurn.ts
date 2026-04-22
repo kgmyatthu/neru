@@ -79,6 +79,14 @@ const FOCUS_HUNT_CYCLES_MAX = 3;
  *  advance at exactly the same speed. */
 const TURN_DURATION_MULT_MIN = 0.82;
 const TURN_DURATION_MULT_MAX = 1.22;
+/** Hand-readjust phase — runs immediately after the main transition lands.
+ *  Simulates the small corrective wobble a human operator makes when cranking
+ *  a microfilm reel past the intended frame. Offset is a few pixels of drift
+ *  on the incoming page that eases back to 0 with a damped half-sine. */
+const READJUST_OFFSET_MIN_PX = 2;
+const READJUST_OFFSET_MAX_PX = 8;
+const READJUST_DURATION_MIN_MS = 180;
+const READJUST_DURATION_MAX_MS = 420;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
@@ -399,16 +407,21 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     applyMicrofilmTransform(outgoingEl, 0, 0, direction);
     applyMicrofilmTransform(incomingEl, direction, 0, direction);
 
-    // Per-turn duration jitter — draws a clamped random multiplier around the
-    // configured `animationDuration` so consecutive turns never advance at the
-    // same pace. The motion-blur envelope, ease curve, and turn `t` all scale
-    // off this value together, so the whole choreography stays coherent.
-    const durationMult = Math.max(
-      TURN_DURATION_MULT_MIN,
-      Math.min(TURN_DURATION_MULT_MAX,
-        TURN_DURATION_MULT_MIN + Math.random() * (TURN_DURATION_MULT_MAX - TURN_DURATION_MULT_MIN)),
-    );
-    const thisTurnDuration = animationDuration * durationMult;
+    // Per-turn randomisation ------------------------------------------------
+    const clampR = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+    const randR = (lo: number, hi: number) => clampR(lo + Math.random() * (hi - lo), lo, hi);
+
+    // Duration jitter — the motion-blur envelope, ease, and `t` all scale off
+    // this so the whole main-transition choreography stays coherent.
+    const thisTurnDuration = animationDuration * randR(TURN_DURATION_MULT_MIN, TURN_DURATION_MULT_MAX);
+
+    // Hand-readjust draw — a small pixel drift applied to the incoming page
+    // after the main transition lands. Sign is random so sometimes the
+    // operator "overshoots", sometimes "undershoots"; magnitude and phase
+    // duration are both clamped randoms.
+    const readjustDuration = randR(READJUST_DURATION_MIN_MS, READJUST_DURATION_MAX_MS);
+    const readjustPeakPx = randR(READJUST_OFFSET_MIN_PX, READJUST_OFFSET_MAX_PX)
+      * (Math.random() < 0.5 ? -1 : 1);
 
     let startTime: number | null = null;
     const offsetNodes = offsetNodesRef.current;
@@ -416,42 +429,57 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     const animate = (timestamp: number) => {
       if (startTime === null) startTime = timestamp;
       const elapsed = timestamp - startTime;
-      const t = Math.min(elapsed / thisTurnDuration, 1);
-      const ease = easeInOut(t);
-      // Velocity envelope — `sin(πt)` approximates the derivative of the cubic
-      // ease-in-out: zero at endpoints, unity peak at t=0.5.
-      const velocity = Math.sin(t * Math.PI);
 
-      // Update the ghost-offset trail on the shared SVG filter.
-      if (offsetNodes) {
-        // Ghosts trail BEHIND motion: for forward turn (direction=1) pages move
-        // leftward, so ghosts sit to the right (+dx). For backward turn the
-        // sign flips.
-        const streak = velocity * MOTION_STREAK_MAX_PX * direction;
-        for (let i = 0; i < offsetNodes.length; i++) {
-          const dx = streak * GHOST_FRACTIONS[i];
-          offsetNodes[i].setAttribute('dx', dx.toFixed(2));
+      if (elapsed < thisTurnDuration) {
+        // ---------- MAIN TRANSITION PHASE ----------
+        const t = elapsed / thisTurnDuration;
+        const ease = easeInOut(t);
+        const velocity = Math.sin(t * Math.PI);
+
+        if (offsetNodes) {
+          const streak = velocity * MOTION_STREAK_MAX_PX * direction;
+          for (let i = 0; i < offsetNodes.length; i++) {
+            offsetNodes[i].setAttribute('dx', (streak * GHOST_FRACTIONS[i]).toFixed(2));
+          }
         }
-      }
 
-      const outgoingOffset = -direction * ease;
-      const incomingOffset = direction * (1 - ease);
-      applyMicrofilmTransform(outgoingEl, outgoingOffset, velocity, direction);
-      applyMicrofilmTransform(incomingEl, incomingOffset, velocity, direction);
-
-      if (t < 1) {
+        applyMicrofilmTransform(outgoingEl, -direction * ease, velocity, direction);
+        applyMicrofilmTransform(incomingEl, direction * (1 - ease), velocity, direction);
         requestAnimationFrame(animate);
-      } else {
-        outgoingEl.classList.remove('turning');
-        incomingEl.classList.remove('turning');
-        const newPage = current + direction;
-        currentRef.current = newPage;
-        setCurrentPage(newPage);
-        stackPages(newPage);
-        animatingRef.current = false;
-        setIsAnimating(false);
-        runPostTransitionFX();
+        return;
       }
+
+      if (elapsed < thisTurnDuration + readjustDuration) {
+        // ---------- READJUST PHASE ----------
+        // Incoming page has just landed at translateX(0). Apply a small pixel
+        // drift following a damped half-sine: rises from 0 → peak → 0 over the
+        // readjust window with a slight decay so the peak lands before 50%.
+        const rt = (elapsed - thisTurnDuration) / readjustDuration;
+        const envelope = Math.sin(rt * Math.PI);   // 0 → 1 → 0
+        const decay = 1 - rt * 0.25;               // subtle extra damp
+        const dxPx = readjustPeakPx * envelope * decay;
+
+        // Clear motion-blur filter (velocity is 0 now anyway) and drop any
+        // skew/scale the main phase may have left lingering on the last frame.
+        incomingEl.style.transform = `translate3d(${dxPx.toFixed(2)}px, 0, 0)`;
+        incomingEl.style.filter = '';
+        // Outgoing sits off-screen at its end position — keep it pinned there.
+        outgoingEl.style.transform = `translate3d(${(-direction * 100).toFixed(0)}%, 0, 0)`;
+        outgoingEl.style.filter = '';
+        requestAnimationFrame(animate);
+        return;
+      }
+
+      // ---------- DONE ----------
+      outgoingEl.classList.remove('turning');
+      incomingEl.classList.remove('turning');
+      const newPage = current + direction;
+      currentRef.current = newPage;
+      setCurrentPage(newPage);
+      stackPages(newPage);
+      animatingRef.current = false;
+      setIsAnimating(false);
+      runPostTransitionFX();
     };
 
     requestAnimationFrame(animate);
