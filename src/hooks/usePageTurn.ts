@@ -80,13 +80,14 @@ const FOCUS_HUNT_CYCLES_MAX = 3;
 const TURN_DURATION_MULT_MIN = 0.82;
 const TURN_DURATION_MULT_MAX = 1.22;
 /** Hand-readjust phase — runs immediately after the main transition lands.
- *  Simulates the small corrective wobble a human operator makes when cranking
- *  a microfilm reel past the intended frame. Offset is a few pixels of drift
- *  on the incoming page that eases back to 0 with a damped half-sine. */
-const READJUST_OFFSET_MIN_PX = 2;
-const READJUST_OFFSET_MAX_PX = 8;
-const READJUST_DURATION_MIN_MS = 180;
-const READJUST_DURATION_MAX_MS = 420;
+ *  Simulates the corrective wobble a human operator makes when cranking
+ *  a microfilm reel past the intended frame. Offset is a pixel drift on
+ *  the incoming page that eases back to 0 with a damped half-sine.
+ *  Wide range: some turns get near-silent settle, others a big languid drift. */
+const READJUST_OFFSET_MIN_PX = 1;
+const READJUST_OFFSET_MAX_PX = 22;
+const READJUST_DURATION_MIN_MS = 120;
+const READJUST_DURATION_MAX_MS = 720;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
