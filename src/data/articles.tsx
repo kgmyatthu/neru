@@ -57,58 +57,9 @@ export const articles: ArticleContent[] = [
     ),
   },
 
-  // ─── Article II: Campaign Rework & AI Formations ──────────
+  // ─── Article II: Unit Designations ────────────────────────
   {
     articleLabel: 'Article II',
-    headline: 'Immersive Campaign Rework — Armies at Period Strength',
-    subhead: 'An economy sized for corps-strength warfare, with AI tuned for 55–60 unit armies',
-    content: React.createElement('div', { className: 'art-text-flow' },
-      React.createElement(InlineFigure, {
-        src: 'images/60ui-prebattle.jpg',
-        alt: '60-unit UI on the pre-battle screen showing both armies',
-        caption: 'Pre-battle — 60 unit cards for both forces.',
-        float: 'right',
-        width: '55%',
-      }),
-      React.createElement('p', null,
-        React.createElement('span', { className: 'drop-cap' }, 'T'),
-        React.createElement('span', { className: 'first-word' }, 'he'),
-        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The engine itself cannot host forces of that magnitude on a single battlefield; in practice, battles are fought as one full stack per side, with an additional stack committing as reinforcement as the engagement develops — a scale that still far exceeds the token armies of the default game. The campaign economy has been reworked from the ground up to sustain this reality: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength.'
-      ),
-      React.createElement('p', null,
-        'A 60-unit army may read as attritional on paper, but recruitment itself imposes the tempo of the war: raising a full stack from scratch takes on the order of fourteen turns, and fielding it alongside a faction\'s other wartime commitments is a real logistical problem. Catching a rival at full strength therefore rewards manoeuvre and decisive battle over mediocre, inconclusive victories — and because replacing a full stack army takes ten or more turns regardless of treasury, two or three such engagements are typically enough to knock a major power out of the war entirely. It is also not unusual for a single catastrophic field defeat to bring the enemy to the peace table on the following turn.'
-      ),
-      React.createElement('p', null,
-        'NER\'s morale system rewards that same decisive impulse. A routed battalion can still be left with considerable manpower; unless actively pursued and cut down — classically the work of cavalry — a broken army reorganises and returns to the line in subsequent battles. Sitting idle while a defeated force withdraws squanders the victory outright. This rewards an operational style recognisably Napoleon\'s own: contemporary accounts repeatedly describe his preference for the decisive battle followed by vigorous pursuit, and a player campaigning without sufficient cavalry will feel the corresponding absence.'
-      ),
-      React.createElement(InlineFigure, {
-        src: 'images/60ui-battle.jpg',
-        alt: '60-unit UI on the battle deployment screen',
-        caption: 'Battle — full 60-unit card panel.',
-        float: 'left',
-        width: '55%',
-      }),
-      React.createElement('p', null,
-        React.createElement('strong', null, 'AI Formations'),
-        ' — tuned for 55–60 unit armies. Improved unit distribution across the line, cavalry held on the flanks, and more frequent flanking attempts during engagement. A meaningful improvement over default behaviour rather than a complete overhaul.'
-      ),
-      React.createElement(InlineFigure, {
-        src: 'images/60ui-campaign.jpg',
-        alt: '60-unit UI on the campaign map',
-        caption: 'Campaign — 60 unit cards in the bottom panel.',
-        float: 'right',
-        width: '55%',
-      }),
-      React.createElement('p', null,
-        React.createElement('strong', null, '60-Unit UI'),
-        ' — custom-built through intensive reverse engineering of the game\'s interface. Campaign, battle, and pre-battle screens now display all sixty unit cards at studio quality. Entirely original work — not extracted from any existing mod — and essential to keeping a 60-unit army legible in practice.'
-      ),
-    ),
-  },
-
-  // ─── Article III: Unit Designations ───────────────────────
-  {
-    articleLabel: 'Article III',
     headline: 'Corrected Unit Designations',
     subhead: 'Battalion, squadron, and battery — proper Napoleonic terminology',
     content: React.createElement('div', { className: 'art-text-flow' },
@@ -151,6 +102,55 @@ export const articles: ArticleContent[] = [
         'Artillery designated as a ',
         React.createElement('strong', null, 'battery'),
         ' — the tactical grouping of guns commanded by a captain and served by its own gunners, drivers, and ammunition train. A standard Napoleonic foot battery fielded six to eight pieces — a mix of cannon and howitzers, the howitzers providing the high-angle, shell-throwing complement to the flat-trajectory guns. Horse artillery batteries followed the same establishment with lighter pieces and mounted crews, enabling them to keep pace with cavalry on manoeuvre and redeploy under fire.'
+      ),
+    ),
+  },
+
+  // ─── Article III: Campaign Rework & AI Formations ─────────
+  {
+    articleLabel: 'Article III',
+    headline: 'Immersive Campaign Rework — Armies at Period Strength',
+    subhead: 'An economy sized for corps-strength warfare, with AI tuned for 55–60 unit armies',
+    content: React.createElement('div', { className: 'art-text-flow' },
+      React.createElement(InlineFigure, {
+        src: 'images/60ui-prebattle.jpg',
+        alt: '60-unit UI on the pre-battle screen showing both armies',
+        caption: 'Pre-battle — 60 unit cards for both forces.',
+        float: 'right',
+        width: '55%',
+      }),
+      React.createElement('p', null,
+        React.createElement('span', { className: 'drop-cap' }, 'T'),
+        React.createElement('span', { className: 'first-word' }, 'he'),
+        ' campaign is designed around 60-unit armies — roughly 20,000 men per stack. Four to five full stacks engaged in a single theatre therefore approach 100,000 troops, in keeping with the manpower historically fielded by the Great Powers of the Napoleonic era. The engine itself cannot host forces of that magnitude on a single battlefield; in practice, battles are fought as one full stack per side, with an additional stack committing as reinforcement as the engagement develops — a scale that still far exceeds the token armies of the default game. The campaign economy has been reworked from the ground up to sustain this reality: recruitment costs, upkeep, faction income, and manpower generation are all tuned to support protracted operations at corps strength.'
+      ),
+      React.createElement('p', null,
+        'A 60-unit army may read as attritional on paper, but recruitment itself imposes the tempo of the war: raising a full stack from scratch takes on the order of fourteen turns, and fielding it alongside a faction\'s other wartime commitments is a real logistical problem. Catching a rival at full strength therefore rewards manoeuvre and decisive battle over mediocre, inconclusive victories — and because replacing a full stack army takes ten or more turns regardless of treasury, two or three such engagements are typically enough to knock a major power out of the war entirely. It is also not unusual for a single catastrophic field defeat to bring the enemy to the peace table on the following turn.'
+      ),
+      React.createElement('p', null,
+        'NER\'s morale system rewards that same decisive impulse. A routed battalion can still be left with considerable manpower; unless actively pursued and cut down — classically the work of cavalry — a broken army reorganises and returns to the line in subsequent battles. Sitting idle while a defeated force withdraws squanders the victory outright. This rewards an operational style recognisably Napoleon\'s own: contemporary accounts repeatedly describe his preference for the decisive battle followed by vigorous pursuit, and a player campaigning without sufficient cavalry will feel the corresponding absence.'
+      ),
+      React.createElement(InlineFigure, {
+        src: 'images/60ui-battle.jpg',
+        alt: '60-unit UI on the battle deployment screen',
+        caption: 'Battle — full 60-unit card panel.',
+        float: 'left',
+        width: '55%',
+      }),
+      React.createElement('p', null,
+        React.createElement('strong', null, 'AI Formations'),
+        ' — tuned for 55–60 unit armies. Improved unit distribution across the line, cavalry held on the flanks, and more frequent flanking attempts during engagement. A meaningful improvement over default behaviour rather than a complete overhaul.'
+      ),
+      React.createElement(InlineFigure, {
+        src: 'images/60ui-campaign.jpg',
+        alt: '60-unit UI on the campaign map',
+        caption: 'Campaign — 60 unit cards in the bottom panel.',
+        float: 'right',
+        width: '55%',
+      }),
+      React.createElement('p', null,
+        React.createElement('strong', null, '60-Unit UI'),
+        ' — custom-built through intensive reverse engineering of the game\'s interface. Campaign, battle, and pre-battle screens now display all sixty unit cards at studio quality. Entirely original work — not extracted from any existing mod — and essential to keeping a 60-unit army legible in practice.'
       ),
     ),
   },
