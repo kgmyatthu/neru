@@ -41,7 +41,7 @@ export function DownloadPage({ data, onNavigate }: DownloadPageProps) {
             ↓&ensp;Download
           </a>
           <a
-            href="https://discord.gg/zvvFHtxx"
+            href="https://discord.gg/VVkG6N56tr"
             className="btn"
             target="_blank"
             rel="noopener noreferrer"
