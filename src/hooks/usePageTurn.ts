@@ -51,8 +51,12 @@ const GHOST_SLOPES = [0.48, 0.38, 0.3, 0.23, 0.17, 0.12, 0.07, 0.04] as const;
 /** Fractional offset multipliers for each ghost (1.0 = MOTION_STREAK_MAX_PX). */
 const GHOST_FRACTIONS = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0] as const;
 
-/** Duration of post-transition vignette flicker + camera shake (ms). */
-const POST_FX_DURATION_MS = 1300;
+/** Total duration of the transition-accompaniment effects — vignette flicker,
+ *  camera shake, and focus-hunt. Starts at t=0 of the main transition (so the
+ *  effects ride along with the animation rather than kicking in afterwards)
+ *  and tails off well past the readjust phase, so there's a settling tail
+ *  visible after the page lands. */
+const FX_DURATION_MS = 2200;
 /** Peak vignette overlay opacity during flicker — kept subtle, projector-ambient rather than horror. */
 const FLICKER_PEAK_OPACITY = 0.11;
 /** Peak shake amplitude in px (translate X/Y each up to ±this). */
@@ -70,8 +74,8 @@ const FOCUS_PEAK_BLUR_PX = 1.1;
  *  like the same animation, just with analog variation between turns. */
 const PEAK_MULT_MIN = 0.65;
 const PEAK_MULT_MAX = 1.2;
-const FALLOFF_DELAY_MIN_MS = 90;
-const FALLOFF_DELAY_MAX_MS = 360;
+const FALLOFF_DELAY_MIN_MS = 150;
+const FALLOFF_DELAY_MAX_MS = 650;
 const FOCUS_HUNT_CYCLES_MIN = 1;
 const FOCUS_HUNT_CYCLES_MAX = 3;
 /** Per-turn animation duration multiplier range — draws a random scale within
@@ -256,10 +260,12 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
   }, []);
 
   /**
-   * Post-transition flicker + camera shake. Both effects share the same decay
-   * envelope: their random amplitude starts at 1 and linearly rolls off to 0
-   * over POST_FX_DURATION_MS. Re-triggering during an in-flight FX cancels the
-   * previous RAF loop so consecutive page turns don't stack.
+   * Transition-accompaniment flicker + camera shake + focus-hunt. Called at
+   * t=0 of the main transition so the effects ride along with the animation
+   * from the very first frame. Each effect has its own random peak and
+   * fall-off-delay; after the delay window the amplitude rolls off linearly
+   * to 0 over the remainder of FX_DURATION_MS. Re-triggering during an
+   * in-flight FX cancels the previous RAF so consecutive turns don't stack.
    */
   const runPostTransitionFX = useCallback(() => {
     if (postFxRafRef.current !== null) cancelAnimationFrame(postFxRafRef.current);
@@ -291,7 +297,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     // linearly through the remaining duration to 0.
     const effectDecay = (elapsed: number, delay: number) => {
       if (elapsed < delay) return 1;
-      const tail = POST_FX_DURATION_MS - delay;
+      const tail = FX_DURATION_MS - delay;
       if (tail <= 0) return 0;
       return clamp(1 - (elapsed - delay) / tail, 0, 1);
     };
@@ -308,7 +314,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
 
     const tick = (now: number) => {
       const elapsed = now - startTs;
-      if (elapsed >= POST_FX_DURATION_MS) {
+      if (elapsed >= FX_DURATION_MS) {
         if (vignette) vignette.style.opacity = '0';
         if (stage) {
           stage.style.transform = '';
@@ -317,7 +323,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         postFxRafRef.current = null;
         return;
       }
-      const tNorm = elapsed / POST_FX_DURATION_MS;
+      const tNorm = elapsed / FX_DURATION_MS;
 
       // Refresh noise sample on a fixed interval; otherwise interpolate.
       const sinceNoise = now - prevNoiseTs;
@@ -398,6 +404,11 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     animatingRef.current = true;
     setIsAnimating(true);
     setScrollProgress(0);
+
+    // Kick off the vignette flicker / camera shake / focus-hunt envelopes at
+    // the same instant the main transition begins, so they ride along with
+    // the animation instead of only appearing after it lands.
+    runPostTransitionFX();
 
     outgoingEl.classList.add('turning');
     incomingEl.classList.add('turning');
@@ -480,7 +491,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
       stackPages(newPage);
       animatingRef.current = false;
       setIsAnimating(false);
-      runPostTransitionFX();
+      // Flicker / shake / focus-hunt already running — started at t=0.
     };
 
     requestAnimationFrame(animate);
