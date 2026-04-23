@@ -256,7 +256,7 @@ export function HeroPage({ data, onNavigate, isVisible = true }: HeroPageProps) 
           </button>
           <span className="hero-byline-dot" aria-hidden="true">&middot;</span>
           <a
-            href="https://discord.gg/zvvFHtxx"
+            href="https://discord.gg/VVkG6N56tr"
             className="hero-link"
             target="_blank"
             rel="noopener noreferrer"
