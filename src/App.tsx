@@ -68,8 +68,19 @@ export default function App() {
   const { currentPage, scrollProgress, scrollDirection, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
     initialPage,
-    animationDuration: 700,
+    animationDuration: 450,
     scrollThreshold: 100,
+    // Full microfilm choreography (motion blur, rolling shutter, readjust,
+    // flicker, shake, focus-hunt) only plays when transitioning between the
+    // Features and Download pages. Every other transition uses a clean
+    // ease-in-out translate — safer for iframe-bearing pages like Discussion
+    // (giscus) and quieter visually for the non-showcase moves.
+    isFxEnabled: (from, to) => {
+      const featuresIdx = pages.findIndex((p) => p.id === 'features');
+      const downloadIdx = pages.findIndex((p) => p.id === 'download');
+      return (from === featuresIdx && to === downloadIdx)
+        || (from === downloadIdx && to === featuresIdx);
+    },
   });
 
   const isOnHero = currentPage === 0;
