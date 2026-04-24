@@ -18,6 +18,12 @@ interface UsePageTurnConfig {
   animationDuration?: number;
   scrollThreshold?: number;
   swipeThreshold?: number;
+  /** Optional gate for microfilm effects (motion blur, rolling shutter,
+   *  stretch, readjust, flicker, shake, focus-hunt). Called with the indices
+   *  being transitioned `(from, to)` — return `true` to play the full
+   *  microfilm choreography, `false` for a simple clean slide. Defaults to
+   *  always-on when not provided. */
+  isFxEnabled?: (from: number, to: number) => boolean;
 }
 
 interface UsePageTurnReturn {
@@ -227,7 +233,13 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     animationDuration = DEFAULTS.animationDuration,
     scrollThreshold = DEFAULTS.scrollThreshold,
     swipeThreshold = DEFAULTS.swipeThreshold,
+    isFxEnabled,
   } = config;
+
+  // Live ref so the turn callback always sees the current predicate without
+  // having to rebuild its deps array (which would invalidate wheel listeners).
+  const isFxEnabledRef = useRef(isFxEnabled);
+  useEffect(() => { isFxEnabledRef.current = isFxEnabled; }, [isFxEnabled]);
 
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -405,10 +417,16 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     setIsAnimating(true);
     setScrollProgress(0);
 
-    // Kick off the vignette flicker / camera shake / focus-hunt envelopes at
-    // the same instant the main transition begins, so they ride along with
-    // the animation instead of only appearing after it lands.
-    runPostTransitionFX();
+    // Microfilm effects (motion blur, rolling shutter, stretch, readjust,
+    // flicker, shake, focus-hunt) only play when the config predicate allows
+    // it — defaults to on. When disabled, we fall back to a plain ease-in-out
+    // translate with no extra flourish (safer for iframe-bearing pages like
+    // the giscus discussion screen).
+    const fxEnabled = isFxEnabledRef.current
+      ? isFxEnabledRef.current(current, current + direction)
+      : true;
+
+    if (fxEnabled) runPostTransitionFX();
 
     outgoingEl.classList.add('turning');
     incomingEl.classList.add('turning');
@@ -423,17 +441,19 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
     const clampR = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
     const randR = (lo: number, hi: number) => clampR(lo + Math.random() * (hi - lo), lo, hi);
 
-    // Duration jitter — the motion-blur envelope, ease, and `t` all scale off
-    // this so the whole main-transition choreography stays coherent.
-    const thisTurnDuration = animationDuration * randR(TURN_DURATION_MULT_MIN, TURN_DURATION_MULT_MAX);
+    // Duration — jitter only when FX are allowed, otherwise use the config
+    // value unchanged for predictable non-FX transitions.
+    const thisTurnDuration = fxEnabled
+      ? animationDuration * randR(TURN_DURATION_MULT_MIN, TURN_DURATION_MULT_MAX)
+      : animationDuration;
 
-    // Hand-readjust draw — a small pixel drift applied to the incoming page
-    // after the main transition lands. Sign is random so sometimes the
-    // operator "overshoots", sometimes "undershoots"; magnitude and phase
-    // duration are both clamped randoms.
-    const readjustDuration = randR(READJUST_DURATION_MIN_MS, READJUST_DURATION_MAX_MS);
-    const readjustPeakPx = randR(READJUST_OFFSET_MIN_PX, READJUST_OFFSET_MAX_PX)
-      * (Math.random() < 0.5 ? -1 : 1);
+    // Hand-readjust draw — only applies when FX are enabled.
+    const readjustDuration = fxEnabled
+      ? randR(READJUST_DURATION_MIN_MS, READJUST_DURATION_MAX_MS)
+      : 0;
+    const readjustPeakPx = fxEnabled
+      ? randR(READJUST_OFFSET_MIN_PX, READJUST_OFFSET_MAX_PX) * (Math.random() < 0.5 ? -1 : 1)
+      : 0;
 
     let startTime: number | null = null;
     const offsetNodes = offsetNodesRef.current;
@@ -446,9 +466,11 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         // ---------- MAIN TRANSITION PHASE ----------
         const t = elapsed / thisTurnDuration;
         const ease = easeInOut(t);
-        const velocity = Math.sin(t * Math.PI);
+        // Velocity drives the microfilm flourish — forced to 0 when FX are
+        // disabled so the transforms collapse to clean translate3d only.
+        const velocity = fxEnabled ? Math.sin(t * Math.PI) : 0;
 
-        if (offsetNodes) {
+        if (fxEnabled && offsetNodes) {
           const streak = velocity * MOTION_STREAK_MAX_PX * direction;
           for (let i = 0; i < offsetNodes.length; i++) {
             offsetNodes[i].setAttribute('dx', (streak * GHOST_FRACTIONS[i]).toFixed(2));
@@ -461,7 +483,7 @@ export function usePageTurn(config: UsePageTurnConfig): UsePageTurnReturn {
         return;
       }
 
-      if (elapsed < thisTurnDuration + readjustDuration) {
+      if (fxEnabled && elapsed < thisTurnDuration + readjustDuration) {
         // ---------- READJUST PHASE ----------
         // Incoming page has just landed at translateX(0). Apply a small pixel
         // drift following a damped half-sine: rises from 0 → peak → 0 over the
