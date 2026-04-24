@@ -68,7 +68,7 @@ export default function App() {
   const { currentPage, scrollProgress, scrollDirection, turn, goToPage, pageRefs } = usePageTurn({
     totalPages: pages.length,
     initialPage,
-    animationDuration: 700,
+    animationDuration: 450,
     scrollThreshold: 100,
   });
 

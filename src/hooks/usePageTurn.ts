@@ -56,7 +56,7 @@ const GHOST_FRACTIONS = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0] as co
  *  effects ride along with the animation rather than kicking in afterwards)
  *  and tails off well past the readjust phase, so there's a settling tail
  *  visible after the page lands. */
-const FX_DURATION_MS = 2200;
+const FX_DURATION_MS = 2800;
 /** Peak vignette overlay opacity during flicker — kept subtle, projector-ambient rather than horror. */
 const FLICKER_PEAK_OPACITY = 0.11;
 /** Peak shake amplitude in px (translate X/Y each up to ±this). */
@@ -90,8 +90,8 @@ const TURN_DURATION_MULT_MAX = 1.22;
  *  Wide range: some turns get near-silent settle, others a big languid drift. */
 const READJUST_OFFSET_MIN_PX = 1;
 const READJUST_OFFSET_MAX_PX = 22;
-const READJUST_DURATION_MIN_MS = 120;
-const READJUST_DURATION_MAX_MS = 720;
+const READJUST_DURATION_MIN_MS = 260;
+const READJUST_DURATION_MAX_MS = 1100;
 const VIGNETTE_ELEMENT_ID = '__microfilm-vignette';
 /** Boundary buffer before wheel/touch can commit a page advance. */
 const BOUNDARY_THRESHOLD = 180;
