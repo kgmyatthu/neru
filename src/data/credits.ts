@@ -30,4 +30,13 @@ export const creditEntries: CreditEntry[] = [
     name: 'Sirlion',
     role: 'Battleterrain max — campaign battle map sizes',
   },
+  {
+    name: 'FCN, ACW & NTW3 mod teams',
+    role: 'Custom battlemaps',
+  },
+  {
+    name: 'Danthemantis',
+    role: 'Total War YouTuber — sharing wisdom',
+    url: 'https://www.youtube.com/@Danthemantis',
+  },
 ];
