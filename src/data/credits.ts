@@ -39,4 +39,13 @@ export const creditEntries: CreditEntry[] = [
     role: 'Total War YouTuber — sharing wisdom',
     url: 'https://www.youtube.com/@Danthemantis',
   },
+  {
+    name: 'SaxoDK',
+    role: 'Seven Years\' War ownership & assets specialist',
+    url: 'https://www.youtube.com/@saxoDK_1600',
+  },
+  {
+    name: 'Zewolfe',
+    role: 'Historical advisor & quality-of-life contributor',
+  },
 ];
